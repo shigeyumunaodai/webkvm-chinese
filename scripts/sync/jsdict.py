@@ -174,16 +174,25 @@ def del_path(obj, path: str) -> None:
 
 
 def deep_merge(ours, upstream):
-    """Merge dicts: upstream values win on existing keys; ours-only keys survive."""
+    """Merge dicts keeping the fork's key order.
+
+    Upstream values win for keys present on both sides (bug fixes / wording
+    updates), fork-only keys survive (localization string migrations), and
+    keys that only exist upstream are appended at the end of their object.
+    Keeping our order makes the generated commit diff small and reviewable
+    instead of re-sorting the whole 15k-line dictionary.
+    """
     if not isinstance(ours, dict) or not isinstance(upstream, dict):
         return upstream
     out = {}
-    for k in upstream:
-        if k in ours and isinstance(ours[k], dict) and isinstance(upstream[k], dict):
-            out[k] = deep_merge(ours[k], upstream[k])
-        else:
+    for k, v in ours.items():
+        if k in upstream and isinstance(v, dict) and isinstance(upstream[k], dict):
+            out[k] = deep_merge(v, upstream[k])
+        elif k in upstream:
             out[k] = upstream[k]
-    for k in ours:
+        else:
+            out[k] = v
+    for k, v in upstream.items():
         if k not in out:
-            out[k] = ours[k]
+            out[k] = v
     return out
