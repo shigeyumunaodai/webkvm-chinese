@@ -266,6 +266,23 @@ def main() -> int:
                 add(path)
                 resolved.append((path, "upstream + China install vars re-applied"))
                 continue
+            if path == "frontend/src/lib/i18n.svelte.js":
+                # The 15k-line dictionary conflicts on almost every upstream
+                # translation update — merge it semantically instead of asking
+                # a human to resolve thousands of lines.
+                r = subprocess.run(
+                    ["python3", "scripts/sync/merge-i18n.py"],
+                    cwd=ROOT,
+                    capture_output=True,
+                    text=True,
+                )
+                if r.returncode != 0:
+                    raise RuntimeError(
+                        "semantic i18n merge failed: " + (r.stderr or r.stdout).strip()
+                    )
+                add(path)
+                resolved.append((path, "semantic i18n merge (upstream en/es/ca + fork zh)"))
+                continue
             if path == ".github/workflows/ci.yml":
                 checkout("theirs", path)
                 reapply_ci()
