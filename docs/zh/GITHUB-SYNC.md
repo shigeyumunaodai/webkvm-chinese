@@ -199,8 +199,14 @@ git config rerere.enabled true
 
 ### 3.4 自动发布与服务器升级
 
-`Build localized release` 在 tag 名形如 `v0.1.9-zh`、`v0.2.0-zh.1`、`zh-v1` 时会创建
-Release。国内下载可用 GitHub 代理前缀（只读加速）：
+`Build localized release` 在 tag 名形如 **`zh-v0.1.9`**、`zh-v0.2.0.1` 时会创建 Release：
+
+```bash
+git tag zh-v0.1.9 && git push origin zh-v0.1.9
+```
+
+> tag 必须以 `zh-v` 开头，**不要用 `v0.1.9-zh`**：上游自带的 `release.yml` 会在 `v*` tag
+> 上运行，可能同时创建英文 Release 并冲突。国内下载可用 GitHub 代理前缀（只读加速）：
 
 ```bash
 # 在发布页找到实际文件链接后（示例）

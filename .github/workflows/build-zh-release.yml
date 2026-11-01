@@ -3,14 +3,16 @@ name: Build localized release
 # Builds a ready-to-install binary from this fork (Chinese UI embedded) on
 # every push to main, and publishes a GitHub release when a zh tag is pushed.
 #
-# Tags that trigger a release:  v0.1.9-zh, v0.2.0-zh.1, zh-v1 ...
-# (any tag whose name starts with "v" and contains "-zh", or "zh-").
+# Release tags MUST start with "zh-v" (for example zh-v0.1.9 or zh-v0.2.0.1):
+# a "v*" tag would ALSO trigger the upstream .github/workflows/release.yml,
+# which would try to publish an English upstream release for the same tag.
+#
+#   git tag zh-v0.1.9 && git push origin zh-v0.1.9
 
 on:
   push:
     branches: [main]
     tags:
-      - 'v*-zh*'
       - 'zh-v*'
   workflow_dispatch:
 
