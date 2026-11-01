@@ -54,3 +54,7 @@ WebKVM 的简体中文文档索引。安装后请先阅读[安装指南](INSTALL
 ## 国内网络
 
 - [国内网络优化指南](CHINA-NETWORK.md) —— 软件源镜像加速、GitHub 代理以及安装器的网络相关参数。
+
+## 维护与同步
+
+- [GitHub 上传与上游自动同步](GITHUB-SYNC.md) —— 把仓库上传到 GitHub，自动合并上游更新、保留汉化、自动构建中文版 Release。

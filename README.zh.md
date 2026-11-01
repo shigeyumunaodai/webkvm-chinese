@@ -184,6 +184,7 @@ webkvm-cli --json vms list | jq '.[] | select(.state=="running") | .name'
 | [**Docker 部署（DOCKER.md）**](docs/zh/DOCKER.md) | 以容器方式运行同一二进制：宿主机前提、绑定挂载与自更新例外。 |
 | [**运维 Runbook**](docs/zh/runbooks/RUNBOOKS.md) | 日常运维、升级 / 回滚、灾难恢复与安全模型。 |
 | [**安全策略（SECURITY.md）**](docs/zh/SECURITY.md) | 威胁模型、SSRF 防护、RBAC 角色与漏洞披露流程。 |
+| [**GitHub 上传与上游自动同步（GITHUB-SYNC.md）**](docs/zh/GITHUB-SYNC.md) | Fork 上传到 GitHub、自动同步上游更新并保留汉化、自动构建中文版 Release。 |
 
 ---
 

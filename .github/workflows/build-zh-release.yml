@@ -1,0 +1,141 @@
+name: Build localized release
+
+# Builds a ready-to-install binary from this fork (Chinese UI embedded) on
+# every push to main, and publishes a GitHub release when a zh tag is pushed.
+#
+# Tags that trigger a release:  v0.1.9-zh, v0.2.0-zh.1, zh-v1 ...
+# (any tag whose name starts with "v" and contains "-zh", or "zh-").
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*-zh*'
+      - 'zh-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  build:
+    name: Build zh binary + package
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend tests, i18n checks and build
+        working-directory: frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          bash ../scripts/check-i18n.sh
+          npm run build
+
+      - name: Install libvirt dev headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvirt-dev pkg-config build-essential
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          check-latest: true
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: Build backend + CLI (embedded zh frontend)
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="0.1.9-zh-${GITHUB_SHA::7}"
+          fi
+          BARE="${VERSION#v}"
+          BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "BARE=${BARE}" >> "$GITHUB_OUTPUT"
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          rm -rf backend/internal/frontend/dist
+          mkdir -p backend/internal/frontend/dist
+          cp -r frontend/dist/* backend/internal/frontend/dist/
+          cd backend
+          CGO_ENABLED=1 go build -buildvcs=false \
+            -ldflags "-s -w -X 'main.Version=${BARE}' -X 'main.BuildTime=${BUILD_TIME}'" \
+            -o webkvm ./cmd/server/
+          CGO_ENABLED=0 go build -buildvcs=false \
+            -ldflags "-s -w -X 'main.Version=${BARE}' -X 'main.BuildTime=${BUILD_TIME}'" \
+            -o webkvm-cli ./cmd/cli/
+          ./webkvm --version
+
+      - name: Package release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          BARE="${{ steps.build.outputs.bare }}"
+          mkdir -p dist
+          cp backend/webkvm dist/webkvm
+          cp backend/webkvm-cli dist/webkvm-cli
+          cp backend/webkvm "dist/webkvm-${BARE}-linux_amd64"
+          cp backend/webkvm-cli "dist/webkvm-cli-${BARE}-linux_amd64"
+          tar -czf "dist/webkvm-${BARE}-linux_amd64.tar.gz" \
+            backend/webkvm backend/webkvm-cli install.sh \
+            LICENSE README.zh.md \
+            packaging/standalone/install.sh packaging/standalone/uninstall.sh \
+            packaging/standalone/update.sh packaging/nfpm/webkvm.default \
+            scripts/cn-mirrors.sh scripts/install-webkvm.sh scripts/webkvm.service \
+            scripts/setup-network.sh scripts/setup-bridge.sh \
+            scripts/generate-self-signed.sh scripts/install-caddy-systemd.sh \
+            scripts/Caddyfile scripts/smoke.sh scripts/webkvm-backup.sh \
+            docs/zh
+          ( cd dist && sha256sum \
+              "webkvm-${BARE}-linux_amd64" \
+              "webkvm-cli-${BARE}-linux_amd64" \
+              "webkvm-${BARE}-linux_amd64.tar.gz" > SHA256SUMS )
+          ls -lh dist
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webkvm-zh-${{ steps.build.outputs.bare }}
+          path: dist/*
+          retention-days: 14
+
+      - name: Publish GitHub release (zh tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: WebKVM zh ${{ steps.build.outputs.version }}
+          generate_release_notes: true
+          body: |
+            Simplified-Chinese localized WebKVM build from the `webkvm-zh` fork.
+
+            - Version: `${{ steps.build.outputs.version }}`
+            - Upstream baseline: `${{ github.sha }}`
+            - Frontend: zh locale 3797 keys (embedded in the single Go binary)
+            - Install: download the tarball, verify `SHA256SUMS`, extract and run
+              `sudo WEBKVM_BINARY=backend/webkvm bash packaging/standalone/install.sh --yes`
+
+            In mainland China, prefix GitHub release URLs with
+            `https://gh-proxy.com/` (or use the installer's `--github-proxy`).
+          files: |
+            dist/*.tar.gz
+            dist/SHA256SUMS
+            dist/webkvm-*-linux_amd64
+            dist/webkvm-cli-*-linux_amd64

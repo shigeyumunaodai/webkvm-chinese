@@ -1,0 +1,14 @@
+# Fork-owned localization assets: if an upstream merge ever conflicts on one of
+# these paths, keep this fork's version.
+#
+# The custom "ours" merge driver has to be enabled first:
+#   git config merge.ours.driver true
+# scripts/sync/sync-upstream.sh (and the Sync upstream workflow) do this
+# automatically before merging.
+docs/zh/** merge=ours
+README.zh.md merge=ours
+scripts/cn-mirrors.sh merge=ours
+scripts/qa/test-cn-mirrors.sh merge=ours
+scripts/sync/** merge=ours
+.github/workflows/sync-upstream.yml merge=ours
+.github/workflows/build-zh-release.yml merge=ours
