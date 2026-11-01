@@ -121,6 +121,19 @@ jobs:
             gh issue create --title "$title" --body-file "$body"
           fi
 
+      - name: Close resolved conflict issue
+        if: steps.sync.outputs.rc == '0' && inputs.dry_run != true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          title="上游同步冲突：需要手动解决"
+          num="$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')"
+          if [ -n "$num" ]; then
+            gh issue close "$num" --comment "上游合并已恢复（自动同步成功），此冲突已解决。"
+          fi
+
       - name: Open or refresh translation backlog issue
         if: steps.sync.outputs.rc == '0' && inputs.dry_run != true
         shell: bash
@@ -129,8 +142,14 @@ jobs:
         run: |
           set -euo pipefail
           f="${RUNNER_TEMP}/translation-backlog.md"
-          [ -f "$f" ] || exit 0
           title="翻译待办：上游同步带来的新键与新文档"
+          if [ ! -f "$f" ]; then
+            num="$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')"
+            if [ -n "$num" ]; then
+              gh issue close "$num" --comment "翻译待办已清空，感谢！"
+            fi
+            exit 0
+          fi
           num="$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')"
           if [ -n "$num" ]; then
             gh issue comment "$num" --body-file "$f"
