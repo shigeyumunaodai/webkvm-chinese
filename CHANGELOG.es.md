@@ -6,6 +6,19 @@ y [Semantic Versioning](https://semver.org/lang/es/).
 
 Versión en inglés: [CHANGELOG.md](CHANGELOG.md).
 
+## [Unreleased]
+
+### Añadido
+- **Localización completa al chino simplificado (`zh`):** diccionario completo de la interfaz (3.797 claves, simétricas en `en/es/ca/zh`), entrada «简体中文» en el selector de idioma, autodetección del idioma del navegador, `<html lang="zh-CN">` sincronizado y descripción de cron en chino (`cronstrue` `zh_CN`).
+- **Optimización de red para China continental:** `scripts/cn-mirrors.sh` cambia apt (sources.list clásico + deb822), dnf (Fedora, Rocky/Alma/CentOS Stream, EPEL) y pacman a réplicas de China continental y configura pip/npm/Go/Docker/Cargo/Git; hace copia de seguridad de cada fichero, admite `--restore`, `--dry-run` y un `--root` simulado, y nunca ejecuta scripts remotos. Integración en el instalador: `--cn-mirrors[=auto|tuna|ustc|aliyun|tencent|huawei]`, `--cn-components=`, `--github-proxy=` (`WEBKVM_CN_MIRRORS`, `WEBKVM_CN_COMPONENTS`, `WEBKVM_GH_PROXY`); `scripts/install-webkvm.sh` también acepta `WEBKVM_INSTALL_TARBALL_URL`; nuevos `make cn-mirrors` / `make test-cn-mirrors`.
+- **Documentación en chino:** `README.zh.md` y un espejo completo en `docs/zh/` (despliegue, instalación, uso, CLI, Docker, API, FAQ, arquitectura, comparativa, seguridad, guía de red doméstica y 5 runbooks de operación), con enlaces de idioma añadidos a los documentos en inglés/español.
+
+### Cambiado
+- **Cobertura i18n:** ~460 textos de interfaz hardcodeados (ES/EN) se movieron a claves i18n traducidas en AppStore, ImageHub, lista de VMs, redes, creación/detalle de VM, almacenamiento, snippets, jaula de seguridad, terminal, ayuda de atajos de teclado, catálogo de imágenes Incus, centro/bandeja de tareas, paginación y etiquetas de accesibilidad (Close/Dismiss/Select).
+- **Herramientas i18n:** `check-i18n` valida cuatro idiomas y la paridad de placeholders en→zh; la suite de pluralización cubre `zh`; el paso de CI se renombró.
+- **Correcciones de documentación detectadas al localizar:** la ayuda del instalador `--bind` indica el valor real por defecto `127.0.0.1` (los README explican cómo exponer en LAN), el modo NAT heredado se documenta como red NAT `default` de libvirt (sin `vmbr1`) y `.env.example` documenta CORS por defecto same-origin (vacío).
+- El tarball de release incluye `scripts/cn-mirrors.sh`.
+
 ## [0.1.9] — 2026-10-25
 
 ### Añadido
@@ -345,7 +358,7 @@ virtualización Linux.
 - **Tienda de aplicaciones:** appliances y _helper scripts_ listos para
   desplegar, y catálogo de imágenes cloud oficiales.
 - **Passthrough PCI y USB** con comprobación previa de IOMMU/VFIO.
-- **Interfaz en tres idiomas:** inglés, español y catalán.
+- **Interfaz en cuatro idiomas:** inglés, español, catalán y chino simplificado.
 - **Instalación:** instalador standalone multidistro (apt/dnf/pacman) con
   HTTPS autofirmado y _rollback_, imagen Docker, paquetes deb/rpm y un
   cliente de línea de comandos (`webkvm-cli`).

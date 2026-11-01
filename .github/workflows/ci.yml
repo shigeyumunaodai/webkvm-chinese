@@ -102,7 +102,7 @@ jobs:
       - name: Format check
         run: npx prettier --check .
 
-      - name: i18n key symmetry (en/es/ca)
+      - name: i18n key symmetry (en/es/ca/zh)
         run: ../scripts/check-i18n.sh
 
       - name: No undefined components in Svelte templates

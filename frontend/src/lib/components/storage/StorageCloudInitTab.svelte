@@ -44,8 +44,7 @@
       description: '',
       category: 'custom',
       type: 'user-data',
-      content:
-        '#cloud-config\n# Tu configuración personalizada aquí\npackage_update: true\npackages:\n  - curl\n',
+      content: `#cloud-config\n# ${t('storage.snippetDefaultComment')}\npackage_update: true\npackages:\n  - curl\n`,
     };
     showSnippetModal = true;
   }
@@ -65,7 +64,7 @@
   function clonePresetAsCustom(sn) {
     editingSnippet = null;
     snippetInitialForm = {
-      name: sn.name + ' (Personalizado)',
+      name: sn.name + t('storage.snippetCloneSuffix'),
       description: sn.description || '',
       category: sn.category || 'custom',
       type: sn.type || 'user-data',

@@ -7,7 +7,7 @@ gestionarlo con Docker/Compose. **No** es un producto distinto ni más ligero: e
 objetivo es una paridad 1:1 con la instalación nativa, con una única excepción
 inevitable (la autoactualización, ver más abajo).
 
-[**English**](DOCKER.md) • [**Español**](DOCKER.es.md)
+[**English**](DOCKER.md) • [**Español**](DOCKER.es.md) • [**简体中文**](zh/DOCKER.md)
 
 ## Cómo funciona
 

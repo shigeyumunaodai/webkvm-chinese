@@ -2,7 +2,7 @@
 
 Documento técnico detallado sobre la arquitectura de software, patrones de concurrencia en Go y diseño del frontend en Svelte 5.
 
-[**English**](ARCHITECTURE.md) • [**Español**](ARCHITECTURE.es.md)
+[**English**](ARCHITECTURE.md) • [**Español**](ARCHITECTURE.es.md) • [**简体中文**](zh/ARCHITECTURE.md)
 
 ---
 

@@ -1,4 +1,4 @@
-.PHONY: all install-deps build build-cli run dev stop clean install uninstall update status logs install-systemd install-systemd-force install-caddy install-all regen-cert rollback docker-build
+.PHONY: all install-deps build build-cli run dev stop clean install uninstall update status logs install-systemd install-systemd-force install-caddy install-all regen-cert rollback docker-build cn-mirrors test-cn-mirrors
 
 # F12-02: recipes below use bash-only syntax (`read ... <<< "$$(...)"`,
 # a here-string). make(1) runs recipes with /bin/sh regardless of the
@@ -134,6 +134,7 @@ dist: binary
 		scripts/webkvm.service \
 		scripts/Caddyfile scripts/generate-self-signed.sh \
 		scripts/install-caddy-systemd.sh scripts/install-webkvm.sh \
+		scripts/cn-mirrors.sh \
 		scripts/smoke.sh \
 		Makefile
 	@cd dist && sha256sum webkvm-$(VERSION)-linux_amd64 webkvm-cli-$(VERSION)-linux_amd64 webkvm-$(VERSION).tar.gz > SHA256SUMS
@@ -277,6 +278,27 @@ install-caddy:
 regen-cert:
 	sudo FORCE=1 scripts/generate-self-signed.sh
 	sudo systemctl reload caddy
+
+# ---- Mainland-China network acceleration ----
+
+# Switch the host's package + dev-tool mirrors to a mainland-China mirror
+# (Ubuntu/Debian apt + deb822, Fedora/RHEL dnf, Arch pacman; pip/npm/go/
+# docker/cargo/git). Every touched file is backed up under
+# /var/backups/webkvm-cn-mirrors and can be restored with
+# `sudo bash scripts/cn-mirrors.sh --restore`.
+#
+# Usage:
+#   make cn-mirrors                                  # auto mirror, default components
+#   make cn-mirrors MIRROR=ustc COMPONENTS=os         # pick mirror/components
+#   make cn-mirrors MIRROR=auto DRYRUN=1              # preview only, no writes
+#   make cn-mirrors DOCKER_MIRROR=https://docker.m.daocloud.io GITHUB_PROXY=https://ghfast.top/
+cn-mirrors:
+	sudo bash scripts/cn-mirrors.sh $(if $(MIRROR),--mirror=$(MIRROR),) $(if $(COMPONENTS),--components=$(COMPONENTS),) $(if $(DOCKER_MIRROR),--docker-mirror=$(DOCKER_MIRROR),) $(if $(GITHUB_PROXY),--github-proxy=$(GITHUB_PROXY),) $(if $(DRYRUN),--dry-run,)
+
+# Offline unit tests for scripts/cn-mirrors.sh: fake --root directories only,
+# no root, no real package manager, no network. Runs on macOS and Linux.
+test-cn-mirrors:
+	bash scripts/qa/test-cn-mirrors.sh
 
 # One-shot: backend + caddy. Use on a fresh host.
 install-all: install-systemd install-caddy

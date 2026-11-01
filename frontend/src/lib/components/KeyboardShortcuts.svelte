@@ -1,5 +1,6 @@
 <script>
   import { navigate, getRoute } from '$lib/router.svelte.js';
+  import { t } from '$lib/i18n.svelte.js';
   import * as Dialog from '$lib/components/ui/dialog';
 
   let show = $state(false);
@@ -84,28 +85,28 @@
 
   const groups = [
     {
-      label: 'Navigation',
+      labelKey: 'keyboardShortcuts.groupNavigation',
       shortcuts: [
-        { keys: ['g', 'v'], desc: 'Go to Virtual Machines' },
-        { keys: ['g', 's'], desc: 'Go to Storage' },
-        { keys: ['g', 'n'], desc: 'Go to Networks' },
-        { keys: ['g', 'u'], desc: 'Go to Users' },
-        { keys: ['g', 'a'], desc: 'Go to Account' },
+        { keys: ['g', 'v'], descKey: 'keyboardShortcuts.goToVms' },
+        { keys: ['g', 's'], descKey: 'keyboardShortcuts.goToStorage' },
+        { keys: ['g', 'n'], descKey: 'keyboardShortcuts.goToNetworks' },
+        { keys: ['g', 'u'], descKey: 'keyboardShortcuts.goToUsers' },
+        { keys: ['g', 'a'], descKey: 'keyboardShortcuts.goToAccount' },
       ],
     },
     {
-      label: 'Actions',
+      labelKey: 'keyboardShortcuts.groupActions',
       shortcuts: [
-        { keys: ['/'], desc: 'Focus the page search field' },
-        { keys: ['c'], desc: 'Create a new VM (when on the VMs list)' },
-        { keys: ['Esc'], desc: 'Close dialogs and palettes' },
+        { keys: ['/'], descKey: 'keyboardShortcuts.focusSearch' },
+        { keys: ['c'], descKey: 'keyboardShortcuts.createVm' },
+        { keys: ['Esc'], descKey: 'keyboardShortcuts.closeDialogs' },
       ],
     },
     {
-      label: 'Help',
+      labelKey: 'keyboardShortcuts.groupHelp',
       shortcuts: [
-        { keys: ['⌘', 'K'], desc: 'Open the command palette' },
-        { keys: ['?'], desc: 'Show this cheatsheet' },
+        { keys: ['⌘', 'K'], descKey: 'keyboardShortcuts.openCommandPalette' },
+        { keys: ['?'], descKey: 'keyboardShortcuts.showCheatsheet' },
       ],
     },
   ];
@@ -114,24 +115,25 @@
 <Dialog.Root open={show} onOpenChange={(v) => (show = v)}>
   <Dialog.Content class="sm:max-w-md">
     <Dialog.Header>
-      <Dialog.Title>Keyboard shortcuts</Dialog.Title>
+      <Dialog.Title>{t('keyboardShortcuts.title')}</Dialog.Title>
       <Dialog.Description
-        >Press <kbd class="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">?</kbd> any time to show
-        this again.</Dialog.Description
+        >{t('keyboardShortcuts.descPrefix')}
+        <kbd class="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">?</kbd>
+        {t('keyboardShortcuts.descSuffix')}</Dialog.Description
       >
     </Dialog.Header>
     <div class="space-y-4 py-2">
-      {#each groups as g (g)}
+      {#each groups as g (g.labelKey)}
         <div>
           <div class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            {g.label}
+            {t(g.labelKey)}
           </div>
           <div class="space-y-1">
-            {#each g.shortcuts as s (s)}
+            {#each g.shortcuts as s (s.descKey)}
               <div
                 class="flex items-center justify-between text-sm py-1 border-b border-border/50 last:border-0"
               >
-                <span class="text-muted-foreground">{s.desc}</span>
+                <span class="text-muted-foreground">{t(s.descKey)}</span>
                 <span class="flex items-center gap-1">
                   {#each s.keys as k, i (k)}
                     <kbd

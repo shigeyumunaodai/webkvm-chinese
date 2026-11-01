@@ -2,7 +2,7 @@
 
 Guía técnica completa para la herramienta de línea de comandos `webkvm-cli`, diseñada para automatización, scripting y administración vía SSH.
 
-[**English**](CLI.md) • [**Español**](CLI.es.md)
+[**English**](CLI.md) • [**Español**](CLI.es.md) • [**简体中文**](zh/CLI.md)
 
 ---
 

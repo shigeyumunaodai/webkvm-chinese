@@ -2,7 +2,7 @@
 
 Comprehensive answers to common architectural, technical, operational, and troubleshooting questions about WebKVM.
 
-[**English**](FAQ.md) • [**Español**](FAQ.es.md)
+[**English**](FAQ.md) • [**Español**](FAQ.es.md) • [**简体中文**](zh/FAQ.md)
 
 ---
 

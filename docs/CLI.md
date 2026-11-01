@@ -2,7 +2,7 @@
 
 A comprehensive guide to the `webkvm-cli` command-line utility for scripting, automation, and SSH administration.
 
-[**English**](CLI.md) • [**Español**](CLI.es.md)
+[**English**](CLI.md) • [**Español**](CLI.es.md) • [**简体中文**](zh/CLI.md)
 
 ---
 

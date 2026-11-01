@@ -1,6 +1,6 @@
 # RUNBOOK: Recuperación ante Desastres (Disaster Recovery)
 
-[**English**](DISASTER-RECOVERY.md) • [**Español**](DISASTER-RECOVERY.es.md)
+[**English**](DISASTER-RECOVERY.md) • [**Español**](DISASTER-RECOVERY.es.md) • [**简体中文**](../zh/runbooks/DISASTER-RECOVERY.md)
 
 Objetivo: restaurar WebKVM tras escenarios de pérdida — host caído,
 datadir borrado/corrupto, pérdida de libvirt, o ficheros clave dañados.

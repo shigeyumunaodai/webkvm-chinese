@@ -19,6 +19,10 @@
    * changes it from the outside (which re-runs the parse).
    */
   import cronstrue from 'cronstrue';
+  // Registers the zh_CN locale with cronstrue (a few KB) so the humanised
+  // sentence below is Chinese too when the UI language is zh.
+  import 'cronstrue/locales/zh_CN.js';
+  import { t, getLocale } from '$lib/i18n.svelte.js';
 
   let { expression = $bindable('0 2 * * *') } = $props();
 
@@ -27,9 +31,9 @@
   // expression that doesn't match one of them lands in "Custom" and
   // reveals the dropdowns.
   const PRESETS = [
-    { label: 'Hourly', expression: '0 * * * *', match: '0 * * * *' },
-    { label: 'Daily 2 AM', expression: '0 2 * * *', match: '0 2 * * *' },
-    { label: 'Weekly Sun 3 AM', expression: '0 3 * * 0', match: '0 3 * * 0' },
+    { labelKey: 'cronPicker.presetsHourly', expression: '0 * * * *', match: '0 * * * *' },
+    { labelKey: 'cronPicker.presetsDaily', expression: '0 2 * * *', match: '0 2 * * *' },
+    { labelKey: 'cronPicker.presetsWeekly', expression: '0 3 * * 0', match: '0 3 * * 0' },
   ];
 
   // --- Mode ------------------------------------------------------------
@@ -85,14 +89,14 @@
   const daysOfMonth = ['*', '1', '15'];
   const months = ['*', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const daysOfWeek = [
-    { value: '*', label: 'Every day' },
-    { value: '0', label: 'Sunday' },
-    { value: '1', label: 'Monday' },
-    { value: '2', label: 'Tuesday' },
-    { value: '3', label: 'Wednesday' },
-    { value: '4', label: 'Thursday' },
-    { value: '5', label: 'Friday' },
-    { value: '6', label: 'Saturday' },
+    { value: '*', labelKey: 'cronPicker.everyDay' },
+    { value: '0', labelKey: 'cronPicker.sunday' },
+    { value: '1', labelKey: 'cronPicker.monday' },
+    { value: '2', labelKey: 'cronPicker.tuesday' },
+    { value: '3', labelKey: 'cronPicker.wednesday' },
+    { value: '4', labelKey: 'cronPicker.thursday' },
+    { value: '5', labelKey: 'cronPicker.friday' },
+    { value: '6', labelKey: 'cronPicker.saturday' },
   ];
 
   // Re-parse when the expression changes from outside (parent
@@ -146,13 +150,16 @@
 
   // --- Humaniser -------------------------------------------------------
   // cronstrue throws on garbage; in that case we show the raw
-  // expression with a "(invalid)" hint so the user knows something
+  // expression with an "(invalid)" hint so the user knows something
   // is off. The wrapping `try` is cheap: cronstrue runs in <1ms.
+  // Locale note: getLocale() is read inside $derived.by, so switching
+  // the UI language re-renders the sentence as well.
   let humanised = $derived.by(() => {
+    const locale = getLocale() === 'zh' ? 'zh_CN' : undefined;
     try {
-      return cronstrue.toString(expression);
+      return cronstrue.toString(expression, locale ? { locale } : undefined);
     } catch {
-      return `${expression} (invalid)`;
+      return t('cronPicker.invalid', { expression });
     }
   });
 </script>
@@ -168,7 +175,7 @@
           : 'border-border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/30'}"
         onclick={() => pickPreset(p)}
       >
-        {p.label}
+        {t(p.labelKey)}
       </button>
     {/each}
     <button
@@ -178,14 +185,16 @@
         : 'border-border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/30'}"
       onclick={switchToCustom}
     >
-      Custom
+      {t('cronPicker.custom')}
     </button>
   </div>
 
   {#if mode === 'custom'}
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 min-w-0">
       <div>
-        <label class="text-xs text-muted-foreground block mb-1" for="cron-min">Minute</label>
+        <label class="text-xs text-muted-foreground block mb-1" for="cron-min"
+          >{t('cronPicker.minute')}</label
+        >
         <select
           id="cron-min"
           class="w-full h-8 rounded-lg border border-border bg-background px-2 text-sm"
@@ -193,12 +202,14 @@
           onchange={updateExpression}
         >
           {#each minutes as m (m)}
-            <option value={m}>{m === '*' ? 'Every' : m}</option>
+            <option value={m}>{m === '*' ? t('cronPicker.every') : m}</option>
           {/each}
         </select>
       </div>
       <div>
-        <label class="text-xs text-muted-foreground block mb-1" for="cron-hr">Hour</label>
+        <label class="text-xs text-muted-foreground block mb-1" for="cron-hr"
+          >{t('cronPicker.hour')}</label
+        >
         <select
           id="cron-hr"
           class="w-full h-8 rounded-lg border border-border bg-background px-2 text-sm"
@@ -206,12 +217,14 @@
           onchange={updateExpression}
         >
           {#each hours as h (h)}
-            <option value={h}>{h === '*' ? 'Every' : h.padStart(2, '0')}</option>
+            <option value={h}>{h === '*' ? t('cronPicker.every') : h.padStart(2, '0')}</option>
           {/each}
         </select>
       </div>
       <div>
-        <label class="text-xs text-muted-foreground block mb-1" for="cron-dom">Day</label>
+        <label class="text-xs text-muted-foreground block mb-1" for="cron-dom"
+          >{t('cronPicker.day')}</label
+        >
         <select
           id="cron-dom"
           class="w-full h-8 rounded-lg border border-border bg-background px-2 text-sm"
@@ -219,12 +232,14 @@
           onchange={updateExpression}
         >
           {#each daysOfMonth as d (d)}
-            <option value={d}>{d === '*' ? 'Every' : d}</option>
+            <option value={d}>{d === '*' ? t('cronPicker.every') : d}</option>
           {/each}
         </select>
       </div>
       <div>
-        <label class="text-xs text-muted-foreground block mb-1" for="cron-mon">Month</label>
+        <label class="text-xs text-muted-foreground block mb-1" for="cron-mon"
+          >{t('cronPicker.month')}</label
+        >
         <select
           id="cron-mon"
           class="w-full h-8 rounded-lg border border-border bg-background px-2 text-sm"
@@ -232,12 +247,14 @@
           onchange={updateExpression}
         >
           {#each months as m (m)}
-            <option value={m}>{m === '*' ? 'Every' : m}</option>
+            <option value={m}>{m === '*' ? t('cronPicker.every') : m}</option>
           {/each}
         </select>
       </div>
       <div>
-        <label class="text-xs text-muted-foreground block mb-1" for="cron-dow">Weekday</label>
+        <label class="text-xs text-muted-foreground block mb-1" for="cron-dow"
+          >{t('cronPicker.weekday')}</label
+        >
         <select
           id="cron-dow"
           class="w-full h-8 rounded-lg border border-border bg-background px-2 text-sm"
@@ -245,7 +262,7 @@
           onchange={updateExpression}
         >
           {#each daysOfWeek as d (d)}
-            <option value={d.value}>{d.label}</option>
+            <option value={d.value}>{t(d.labelKey)}</option>
           {/each}
         </select>
       </div>

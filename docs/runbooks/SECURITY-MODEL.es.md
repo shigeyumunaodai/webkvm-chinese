@@ -1,6 +1,6 @@
 # RUNBOOK: Modelo de Seguridad y Auditoría
 
-[**English**](SECURITY-MODEL.md) • [**Español**](SECURITY-MODEL.es.md)
+[**English**](SECURITY-MODEL.md) • [**Español**](SECURITY-MODEL.es.md) • [**简体中文**](../zh/runbooks/SECURITY-MODEL.md)
 
 Objetivo: documentar qué protege WebKVM, dónde se registra la actividad
 y cómo un operador debe auditar el sistema. Complementa a

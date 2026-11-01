@@ -1,6 +1,6 @@
 # RUNBOOK: Upgrade and Rollback
 
-[**English**](UPGRADE-ROLLBACK.md) • [**Español**](UPGRADE-ROLLBACK.es.md)
+[**English**](UPGRADE-ROLLBACK.md) • [**Español**](UPGRADE-ROLLBACK.es.md) • [**简体中文**](../zh/runbooks/UPGRADE-ROLLBACK.md)
 
 Purpose: Upgrade WebKVM safely and reliably, and roll back to the previous version if necessary, **without data loss or audit corruption**.
 

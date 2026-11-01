@@ -4,7 +4,7 @@ Single document covering **installation** of the WebKVM manager and the
 **technical documentation** of the application and its code. For daily use see
 [USAGE.md](USAGE.md).
 
-[**English**](INSTALLATION.md) • [**Español**](INSTALLATION.es.md)
+[**English**](INSTALLATION.md) • [**Español**](INSTALLATION.es.md) • [**简体中文**](zh/INSTALLATION.md)
 
 ---
 
@@ -118,7 +118,7 @@ already-exported variable. Run `install.sh --help` for the built-in list.
 |----------|--------------|
 | `WEBKVM_DATA_DIR` | Data directory (default `/opt/webkvm`). |
 | `WEBKVM_PREFIX` | Install prefix (default `/usr/local`). |
-| `WEBKVM_BIND_ADDR` | Listen address (default `0.0.0.0`). |
+| `WEBKVM_BIND_ADDR` | Listen address (default `127.0.0.1`, local-only; set `0.0.0.0` or a LAN IP to expose the UI, together with HTTPS). |
 | `WEBKVM_PORT` | Port (default `8080`). |
 | `WEBKVM_BINARY` | Path to a local binary. |
 | `WEBKVM_BINARY_URL` | HTTPS URL for the binary (checksum mandatory). |
@@ -164,11 +164,12 @@ auth. In that case install with `WEBKVM_HTTPS=no` and point your vhost at
 
 ### 6. VM networking
 
-WebKVM uses **one model: real OS-level Linux bridges** (Proxmox-style).
-libvirt virtual networks (`default`, `virbr0`, NAT, macvtap/direct) are no
-longer created, listed or used. KVM attaches with
-`<interface type='bridge'><source bridge='vmbrX'/>` and Incus with
-`nictype=bridged parent=vmbrX`.
+By default WebKVM uses **real OS-level Linux bridges** (Proxmox-style): KVM
+attaches with `<interface type='bridge'><source bridge='vmbrX'/>` and Incus
+with `nictype=bridged parent=vmbrX`. That is the only model the `bridge` and
+`both` modes use — libvirt's `default`/`virbr0` NAT network is disabled there.
+The legacy NAT-only mode (`nat`) is the exception: it configures just libvirt's
+default NAT network and does not create a physical bridge.
 
 Chosen with `NETWORK_MODE`:
 
@@ -178,10 +179,13 @@ Chosen with `NETWORK_MODE`:
   `BRIDGE_STATIC_IP/CIDR` + gateway + DNS). Reuses an existing host bridge
   when present; otherwise creates one (macvlan slave) without touching the
   host's own address.
-- **Isolated NAT (`nat`, opt-in)** — an isolated bridge (`vmbr1`) anchored to
-  a kernel `dummy0` interface, static `100.0.0.1/24`, with `dnsmasq` DHCP and
-  `MASQUERADE`, so its tenants reach the internet through the host's uplink.
-- **Both (`both`, opt-in)** — both bridges available; pick per VM.
+- **NAT only (`nat`, opt-in, legacy)** — configures libvirt's default NAT
+  network (`192.168.122.0/24`) and leaves the host's own interface untouched;
+  it does **not** create `vmbr1`. Prefer `bridge` (LAN) or `both` (LAN +
+  isolated tenant network).
+- **Both (`both`, opt-in)** — the physical LAN bridge (`vmbr0`) **and** the
+  isolated tenant bridge `vmbr1` (a kernel `dummy0`-anchored bridge, static
+  `100.0.0.1/24`, `dnsmasq` DHCP and `MASQUERADE`); pick one per VM.
 
 From the UI (**Networking**) you can create extra host bridges with an optional
 IP + DHCP, and per-VM nftables firewall rules. The installer wires this up
@@ -371,7 +375,7 @@ Three planes:
 | Variable | Default | Notes |
 |----------|---------|-------|
 | `PORT` | `8080` | Backend HTTP/HTTPS port. |
-| `BIND_ADDR` | `127.0.0.1` → `0.0.0.0` fresh installs | Persisted as `server.bind_addr` in `config.json`. |
+| `BIND_ADDR` | `127.0.0.1` | Backend/config default. The standalone installer also writes `127.0.0.1` unless `--bind` is given; `scripts/webkvm.service` (Makefile install) and the Docker image set `0.0.0.0`. Persisted as `server.bind_addr` in `config.json`. |
 | `LIBVIRT_URI` | `qemu:///system` | libvirt URI. |
 | `DATA_DIR` | `/opt/webkvm` | Persistent data directory. |
 | `JWT_SECRET` | auto-generated | Stored at `{DATA_DIR}/jwt.key` (0600); weak secrets rejected. |

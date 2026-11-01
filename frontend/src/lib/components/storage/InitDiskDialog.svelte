@@ -230,7 +230,7 @@
       });
       updateTask(taskId, {
         pct: 85,
-        message: 'Registrando pools de almacenamiento y persistencia...',
+        message: t('storage.initDiskTaskRegistering'),
       });
       const createdPools = res?.pools || [];
       const failed = createdPools.filter((p) => p.status === 'error');
@@ -251,11 +251,11 @@
       } else {
         toast.success(t('storage.diskInitialized'));
       }
-      finishTask(taskId, 'success', 'Disco inicializado y montado con éxito', 100);
+      finishTask(taskId, 'success', t('storage.diskInitialized'), 100);
       open = false;
       onInitialized();
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error al inicializar disco', 25);
+      finishTask(taskId, 'error', e.message || t('storage.initDiskTaskError'), 25);
       toast.error(e.message);
     } finally {
       initDiskBusy = false;

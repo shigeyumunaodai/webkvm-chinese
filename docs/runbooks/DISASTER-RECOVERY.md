@@ -1,6 +1,6 @@
 # RUNBOOK: Disaster Recovery
 
-[**English**](DISASTER-RECOVERY.md) • [**Español**](DISASTER-RECOVERY.es.md)
+[**English**](DISASTER-RECOVERY.md) • [**Español**](DISASTER-RECOVERY.es.md) • [**简体中文**](../zh/runbooks/DISASTER-RECOVERY.md)
 
 Purpose: Restore WebKVM following catastrophic failures — host hardware failure, corrupted datadir, libvirt corruption, or lost configuration files. The system is designed so that **the datadir is the single source of state**; all other components (binaries, systemd services, storage pools) are reproducible.
 

@@ -185,10 +185,10 @@
             class="input w-full !text-xs font-medium"
           >
             {#if poolPurpose === 'container'}
-              <option value="dir">dir (Directorio Local)</option>
-              <option value="zfs">zfs (ZFS Pool Incus)</option>
-              <option value="btrfs">btrfs (Btrfs Pool Incus)</option>
-              <option value="lvm">lvm (LVM Pool Incus)</option>
+              <option value="dir">{t('storage.incusDirOption')}</option>
+              <option value="zfs">{t('storage.incusZfsOption')}</option>
+              <option value="btrfs">{t('storage.incusBtrfsOption')}</option>
+              <option value="lvm">{t('storage.incusLvmOption')}</option>
             {:else}
               <option value="dir">{t('storage.localDir')}</option>
               <option value="netfs">{t('storage.netfs')}</option>
@@ -264,11 +264,13 @@
                 <button
                   type="button"
                   onclick={() => {
-                    poolPath = `/mnt/${poolName || 'storage'}`;
+                    poolPath = `/mnt/${poolName || t('storage.poolNamePlaceholderShort')}`;
                   }}
                   class="text-[11px] text-accent hover:underline font-medium cursor-pointer"
                 >
-                  {t('storage.useProxmoxStylePath', { name: poolName || 'nombre' })}
+                  {t('storage.useProxmoxStylePath', {
+                    name: poolName || t('storage.poolNamePlaceholderShort'),
+                  })}
                 </button>
               </div>
               <Input
@@ -279,7 +281,7 @@
               <LocalFolderBrowser onSelect={(p) => (poolPath = p)} />
               <p class="text-[11px] text-muted-foreground mt-1">
                 {@html t('storage.absolutePathHint', {
-                  name: `<code class="text-foreground font-mono">/mnt/${poolName || 'mi-disco'}</code>`,
+                  name: `<code class="text-foreground font-mono">/mnt/${poolName || t('storage.poolNamePlaceholderShort')}</code>`,
                 })}
               </p>
             </div>
@@ -417,7 +419,7 @@
               </div>
               <div>
                 <label for="create-cifs-pass" class="block text-xs font-semibold mb-1"
-                  >Contraseña</label
+                  >{t('common.password')}</label
                 >
                 <Input
                   id="create-cifs-pass"

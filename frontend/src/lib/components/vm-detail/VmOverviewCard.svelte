@@ -72,14 +72,14 @@
       <p class="text-2xl font-semibold tnum">{vm?.vcpus ?? 0}</p>
       <p class="text-xs text-muted-foreground mt-0.5">{t('common.vcpu')}</p>
       {#if vm?.cpu_usage != null}<p class="text-xs text-accent mt-0.5 tnum">
-          {vm.cpu_usage.toFixed(1)}% used
+          {t('storage.occupiedPct', { pct: vm.cpu_usage.toFixed(1) })}
         </p>{/if}
     </div>
     <div class="border border-border rounded-md p-3 bg-background">
       <p class="text-2xl font-semibold tnum">{vm?.ram_mb ?? 0}</p>
       <p class="text-xs text-muted-foreground mt-0.5">{t('vmDetail.ramLabel')}</p>
       {#if vm?.ram_used_mb != null}<p class="text-xs text-accent mt-0.5 tnum">
-          {vm.ram_used_mb} MB used
+          {t('vmDetail.ramUsed', { ram: vm.ram_used_mb })}
         </p>{/if}
     </div>
     <div class="border border-border rounded-md p-3 bg-background">

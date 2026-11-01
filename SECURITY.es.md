@@ -1,6 +1,6 @@
 # Política de Seguridad y Reporte de Vulnerabilidades
 
-[**English**](SECURITY.md) • [**Español**](SECURITY.es.md)
+[**English**](SECURITY.md) • [**Español**](SECURITY.es.md) • [**简体中文**](docs/zh/SECURITY.md)
 
 ---
 

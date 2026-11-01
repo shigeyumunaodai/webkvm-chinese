@@ -37,18 +37,18 @@
   let eKVMHidden = $state(false);
   let eCPUFlags = $state([]);
 
-  const COMMON_CPU_FLAGS = [
-    { value: 'aes', label: 'aes', desc: 'AES-NI Hardware Encryption' },
-    { value: 'avx2', label: 'avx2', desc: 'Advanced Vector Extensions 2' },
-    { value: 'topoext', label: 'topoext', desc: 'AMD SMT / Core Topology' },
-    { value: 'pdpe1gb', label: 'pdpe1gb', desc: '1 GB Hugepages Support' },
-    { value: 'pcid', label: 'pcid', desc: 'Process-Context Identifiers (faster TLB)' },
+  const COMMON_CPU_FLAGS = $derived([
+    { value: 'aes', label: 'aes', desc: t('vmDetail.cpuFlagDescAes') },
+    { value: 'avx2', label: 'avx2', desc: t('vmDetail.cpuFlagDescAvx2') },
+    { value: 'topoext', label: 'topoext', desc: t('vmDetail.cpuFlagDescTopoext') },
+    { value: 'pdpe1gb', label: 'pdpe1gb', desc: t('vmDetail.cpuFlagDescPdpe1gb') },
+    { value: 'pcid', label: 'pcid', desc: t('vmDetail.cpuFlagDescPcid') },
     {
       value: 'hypervisor',
       label: 'hypervisor',
-      desc: 'Hide Hypervisor Feature Bit (default: off)',
+      desc: t('vmDetail.cpuFlagDescHypervisor'),
     },
-  ];
+  ]);
 
   const cpuModelPresets = [
     'EPYC-Genoa',
@@ -102,20 +102,20 @@
   let incusProfiles = $state([]);
   let editSaving = $state(false);
 
-  const networkModels = [
-    { value: 'virtio', label: 'virtio (recommended)' },
-    { value: 'e1000e', label: 'e1000e (Intel, ideal for Windows)' },
-    { value: 'e1000', label: 'e1000 (legacy Intel)' },
-    { value: 'rtl8139', label: 'rtl8139 (Realtek, very compatible)' },
-    { value: 'pcnet', label: 'pcnet (AMD, legacy)' },
-  ];
+  const networkModels = $derived([
+    { value: 'virtio', label: t('vmCreate.networkVirtioRec') },
+    { value: 'e1000e', label: t('vmDetail.nicE1000e') },
+    { value: 'e1000', label: t('vmDetail.nicE1000') },
+    { value: 'rtl8139', label: t('vmDetail.nicRtl8139') },
+    { value: 'pcnet', label: t('vmDetail.nicPcnet') },
+  ]);
 
-  const audioModels = [
-    { value: 'none', label: 'Sin audio (Desactivado)' },
-    { value: 'ich9', label: 'Intel ICH9 HD Audio (Recomendado)' },
-    { value: 'ac97', label: 'AC97 Audio (Legacy)' },
+  const audioModels = $derived([
+    { value: 'none', label: t('vmCreate.audioModelNone') },
+    { value: 'ich9', label: t('vmCreate.audioModelIch9') },
+    { value: 'ac97', label: t('vmCreate.audioModelAc97') },
     { value: 'es1370', label: 'Ensoniq ES1370' },
-  ];
+  ]);
 
   const bootOrderOptions = $derived([
     { value: 'disk', label: t('vmCreate.bootOrderDisk') },
@@ -352,7 +352,7 @@
           : 'border-transparent text-muted-foreground hover:text-foreground'}"
       >
         <Icon name="cpu" size={13} />
-        CPU & RAM
+        {t('vmDetail.tabCpuRam')}
       </button>
 
       <button
@@ -416,7 +416,7 @@
 
           <SettingRow
             label={t('vmDetail.groupsLabel')}
-            helper="Organiza esta instancia asociándola a uno o varios grupos de trabajo."
+            helper={t('vmCreate.groupAssignmentHelper')}
           >
             {#if groupsList.length > 0}
               <div class="flex flex-wrap gap-1.5 max-w-sm justify-end pt-1">
@@ -492,10 +492,10 @@
           {#if !isContainerVm}
             <SettingRow label={t('vmDetail.cpuModeLabel')} helper={t('vmCreate.cpuModeHelper')}>
               <select id="edit-cpu" bind:value={eCPUMode} class="input max-w-xs">
-                <option value="host-passthrough">host-passthrough (Rendimiento nativo)</option>
-                <option value="host-model">host-model (Compatible con migración)</option>
-                <option value="max">max (Todas las características QEMU)</option>
-                <option value="custom">custom</option>
+                <option value="host-passthrough">{t('vmCreate.cpuModeHostPassthrough')}</option>
+                <option value="host-model">{t('vmDetail.cpuModeHostModel')}</option>
+                <option value="max">{t('vmDetail.cpuModeMax')}</option>
+                <option value="custom">{t('vmDetail.cpuModeCustom')}</option>
               </select>
             </SettingRow>
 
@@ -621,18 +621,18 @@
             >
               <select id="edit-video" bind:value={eVideoModel} class="input max-w-xs">
                 <option value="virtio" disabled={!supports('video', 'virtio')}
-                  >VirtIO GPU (Moderno y rápido)</option
+                  >{t('vmDetail.videoVirtio')}</option
                 >
                 <option value="qxl" disabled={!supports('video', 'qxl')}
-                  >QXL (Excelente soporte SPICE/Windows){!supports('video', 'qxl')
+                  >{t('vmDetail.videoQxl')}{!supports('video', 'qxl')
                     ? ' — ' + unavailableReason('video', 'qxl')
                     : ''}</option
                 >
                 <option value="vga" disabled={!supports('video', 'vga')}
-                  >VGA Estándar (Máxima compatibilidad)</option
+                  >{t('vmDetail.videoVga')}</option
                 >
                 <option value="cirrus" disabled={!supports('video', 'cirrus')}
-                  >Cirrus (Legado / SO antiguos)</option
+                  >{t('vmDetail.videoCirrus')}</option
                 >
                 <option value="vmvga" disabled={!supports('video', 'vmvga')}>VMware SVGA II</option>
                 <option value="bochs" disabled={!supports('video', 'bochs')}>Bochs Display</option>
@@ -653,14 +653,14 @@
             </SettingRow>
 
             <SettingRow
-              label="Servidores Gráficos de Consola"
-              helper="Activa o desactiva las consolas gráficas (VNC, SPICE o ambas simultáneamente)"
+              label={t('vmDetail.consoleServersLabel')}
+              helper={t('vmDetail.consoleServersHelper')}
             >
               <select bind:value={eGraphicsType} class="input max-w-xs">
-                <option value="both">Ambas activas (noVNC + SPICE)</option>
-                <option value="vnc">Solo noVNC (RFB estándar)</option>
-                <option value="spice">Solo SPICE (Alto rendimiento / Web SPICE)</option>
-                <option value="none">Desactivadas (Sin consola gráfica / Headless)</option>
+                <option value="both">{t('vmDetail.graphicsBoth')}</option>
+                <option value="vnc">{t('vmDetail.graphicsVncOnly')}</option>
+                <option value="spice">{t('vmDetail.graphicsSpiceOnly')}</option>
+                <option value="none">{t('vmDetail.graphicsHeadless')}</option>
               </select>
             </SettingRow>
 
@@ -694,8 +694,8 @@
               disabled
               class="input max-w-xs opacity-60"
             >
-              <option value="q35">Q35 (PCIe / Moderno)</option>
-              <option value="i440fx">i440fx (PCI / Legacy)</option>
+              <option value="q35">{t('vmDetail.chipsetQ35')}</option>
+              <option value="i440fx">{t('vmDetail.chipsetI440fx')}</option>
             </select>
           </SettingRow>
 
@@ -732,8 +732,8 @@
                   disabled={!eTPM}
                   class="input !py-1 !text-xs w-28 {!eTPM ? 'opacity-50' : ''}"
                 >
-                  <option value="2.0">v2.0 (Win11)</option>
-                  <option value="1.2">v1.2 (Legacy)</option>
+                  <option value="2.0">{t('vmDetail.tpmVersion20')}</option>
+                  <option value="1.2">{t('vmDetail.tpmVersion12')}</option>
                 </select>
               </div>
             </SettingRow>
@@ -770,10 +770,7 @@
         </div>
       {:else if editTab === 'os'}
         <div class="space-y-3 pt-1">
-          <SettingRow
-            label={t('vmDetail.osTypeLabel')}
-            helper="Familia del sistema operativo invitado para optimizar drivers e iconografía."
-          >
+          <SettingRow label={t('vmDetail.osTypeLabel')} helper={t('vmDetail.osTypeHelper')}>
             <select id="edit-ostype" bind:value={eOSType} class="input max-w-xs">
               <option value="">{t('vmDetail.auto')}</option>
               <option value="linux">{t('vmDetail.linux')}</option>
@@ -783,14 +780,11 @@
             </select>
           </SettingRow>
 
-          <SettingRow
-            label={t('vmDetail.osVersionLabel')}
-            helper="Versión específica o variante de la distribución (ej. ubuntu24.04, win11, arch)."
-          >
+          <SettingRow label={t('vmDetail.osVersionLabel')} helper={t('vmDetail.osVersionHelper')}>
             <Input
               id="edit-osver"
               bind:value={eOSVersion}
-              placeholder="ej. ubuntu24.04"
+              placeholder={t('vmDetail.osVersionPlaceholder')}
               class="max-w-xs"
             />
           </SettingRow>
@@ -827,7 +821,7 @@
             t('common.vcpu'),
             `${vm.vcpus} vCPU`,
             'cpu',
-            `${vm.vcpus} cores`,
+            t('vmDetail.coresCount', { n: vm.vcpus }),
             true
           )}
           {@render hwRow(
@@ -856,7 +850,7 @@
                   ? t('vmDetail.cpuPriorityLow')
                   : vm.cpu_units === 2048
                     ? t('vmDetail.cpuPriorityHigh')
-                    : `${vm.cpu_units} shares`,
+                    : t('vmDetail.cpuSharesCount', { n: vm.cpu_units }),
                 'cpu'
               )}
             {/if}
@@ -896,14 +890,14 @@
             )}
             {@render hwRow(
               'tv',
-              'Consola Gráfica',
+              t('vmDetail.graphicsConsoleLabel'),
               vm.graphics_type === 'vnc'
-                ? 'Solo noVNC'
+                ? t('vmDetail.graphicsVncOnly')
                 : vm.graphics_type === 'spice'
-                  ? 'Solo SPICE'
+                  ? t('vmDetail.graphicsSpiceOnly')
                   : vm.graphics_type === 'none'
                     ? t('common.disabled')
-                    : 'noVNC + SPICE',
+                    : t('vmDetail.graphicsBoth'),
               'display',
               vm.graphics_type === 'none' ? t('common.off') : vm.graphics_type || 'both',
               false,
@@ -974,7 +968,9 @@
             {@render hwRow(
               'zap',
               t('vmDetail.bios'),
-              vm.firmware === 'uefi' ? 'UEFI OVMF (x86_64)' : 'SeaBIOS (Legacy)',
+              vm.firmware === 'uefi'
+                ? t('vmDetail.firmwareUefiValue')
+                : t('vmDetail.firmwareSeabiosValue'),
               'boot',
               (vm.firmware || 'seabios').toUpperCase()
             )}
@@ -1040,7 +1036,7 @@
               t('vmCreate.profiles'),
               (vm.profiles || ['default']).join(', '),
               'container',
-              `${(vm.profiles || ['default']).length} profiles`
+              t('vmDetail.profilesCount', { n: (vm.profiles || ['default']).length })
             )}
           </div>
         </div>
@@ -1075,7 +1071,7 @@
           {@render hwRow(
             'power',
             t('vmCreate.startAtBoot'),
-            vm.autostart ? 'Inicio Automático con el Host' : 'Manual',
+            vm.autostart ? t('vmDetail.autostartHostValue') : t('vmDetail.manualValue'),
             'general',
             vm.autostart ? 'yes' : 'no',
             vm.autostart

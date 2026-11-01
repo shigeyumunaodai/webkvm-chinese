@@ -262,19 +262,24 @@
         upsertTask({
           id: taskId,
           kind: 'network',
-          title: `Desvinculando interfaz: ${iface.name}`,
+          title: t('networks.isolatingTitle', { name: iface.name }),
           pct: 30,
-          message: `Extrayendo de ${iface.master || 'bridge'}...`,
+          message: t('networks.isolatingMessage', { master: iface.master || 'bridge' }),
           status: 'running',
         });
         try {
           await api.configureHostInterface(iface.name, { isolate: true });
-          finishTask(taskId, 'success', `Interfaz ${iface.name} aislada correctamente`, 100);
+          finishTask(
+            taskId,
+            'success',
+            t('networks.isolateIfaceSuccess', { name: iface.name }),
+            100
+          );
           confirmState.open = false;
           toast.success(t('networks.isolateIfaceSuccess', { name: iface.name }));
           await Promise.all([load(), loadHostInterfaces()]);
         } catch (e) {
-          finishTask(taskId, 'error', e.message || 'Error al aislar interfaz', 30);
+          finishTask(taskId, 'error', e.message || t('networks.isolateFailed'), 30);
           toast.error(e.message, { duration: 0 });
         } finally {
           confirmState.loading = false;
@@ -317,9 +322,9 @@
     upsertTask({
       id: taskId,
       kind: 'network',
-      title: `Configurando enlace Bond: ${bondN} (${bondMode})`,
+      title: t('networks.bondConfiguringTitle', { name: bondN, mode: bondMode }),
       pct: 30,
-      message: 'Aplicando configuración Netplan y esclavos...',
+      message: t('networks.applyingNetplan'),
       status: 'running',
     });
     try {
@@ -331,13 +336,13 @@
         ipv4: !bondBridge && bondIPv4.trim() ? bondIPv4.trim() : undefined,
         gateway: !bondBridge && bondGateway.trim() ? bondGateway.trim() : undefined,
       });
-      finishTask(taskId, 'success', `Enlace Bond ${bondN} creado con éxito`, 100);
+      finishTask(taskId, 'success', t('networks.bondCreatedSuccess', { name: bondN }), 100);
       toast.success(t('networks.bondCreatedSuccess', { name: bondName }));
       showBondModal = false;
       bondSlaves = [];
       await Promise.all([load(), loadHostInterfaces()]);
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error al crear enlace Bond', 30);
+      finishTask(taskId, 'error', e.message || t('networks.bondCreateFailed'), 30);
       toast.error(e.message, { duration: 0 });
     } finally {
       savingBond = false;
@@ -350,18 +355,18 @@
     upsertTask({
       id: taskId,
       kind: 'network',
-      title: `Eliminando enlace Bond: ${name}`,
+      title: t('networks.bondDeletingTitle', { name }),
       pct: 30,
-      message: 'Liberando interfaces y actualizando Netplan...',
+      message: t('networks.releasingInterfaces'),
       status: 'running',
     });
     try {
       await api.deleteHostBond(name);
-      finishTask(taskId, 'success', `Enlace Bond ${name} eliminado con éxito`, 100);
+      finishTask(taskId, 'success', t('networks.bondDeletedSuccess', { name }), 100);
       toast.success(t('networks.bondDeletedSuccess', { name }));
       await Promise.all([load(), loadHostInterfaces()]);
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error al eliminar enlace Bond', 30);
+      finishTask(taskId, 'error', e.message || t('networks.bondDeleteFailed'), 30);
       toast.error(e.message, { duration: 0 });
     }
   }
@@ -373,21 +378,26 @@
     upsertTask({
       id: taskId,
       kind: 'network',
-      title: `Asociando ${attachingIface.name} a ${targetBridge}`,
+      title: t('networks.attachingTitle', { name: attachingIface.name, bridge: targetBridge }),
       pct: 30,
-      message: 'Vinculando interfaz al puente...',
+      message: t('networks.attachingMessage'),
       status: 'running',
     });
     try {
       await api.updateNetwork(targetBridge, { add_slaves: [attachingIface.name] });
-      finishTask(taskId, 'success', `${attachingIface.name} vinculado a ${targetBridge}`, 100);
+      finishTask(
+        taskId,
+        'success',
+        t('networks.attachSuccess', { name: attachingIface.name, bridge: targetBridge }),
+        100
+      );
       toast.success(
         t('networks.attachSuccess', { name: attachingIface.name, bridge: targetBridge })
       );
       attachingIface = null;
       await Promise.all([load(), loadHostInterfaces()]);
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error al asociar a puente', 30);
+      finishTask(taskId, 'error', e.message || t('networks.bridgeAttachFailed'), 30);
       toast.error(e.message, { duration: 0 });
     } finally {
       savingAttach = false;
@@ -498,15 +508,15 @@
     upsertTask({
       id: taskId,
       kind: 'network',
-      title: `Creando red virtual: ${name.trim()}`,
+      title: t('networks.creatingNetworkTitle', { name: name.trim() }),
       pct: 30,
-      message: 'Definiendo puente, DHCP y reglas de aislamiento...',
+      message: t('networks.definingNetwork'),
       status: 'running',
     });
     try {
       const created = await api.createNetwork(payload);
       const label = (created && created.name) || name;
-      finishTask(taskId, 'success', `Red virtual ${label} creada con éxito`, 100);
+      finishTask(taskId, 'success', t('networks.networkCreateSuccess', { name: label }), 100);
       toast.success(t('networks.networkCreated', { label }), { duration: 6000 });
       resetForm();
       await load();
@@ -514,7 +524,7 @@
         .getElementById('networks-table-anchor')
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error al crear red virtual', 30);
+      finishTask(taskId, 'error', e.message || t('networks.networkCreateFailed'), 30);
       console.error('[Networks] create failed', { payload, error: e });
       error = e.message;
       toast.error(e.message, { duration: 0 });
@@ -1360,11 +1370,11 @@
             <Input
               id="iface-ip-input"
               bind:value={ifaceIPv4}
-              placeholder="192.168.1.100/24 (o vacío para limpiar)"
+              placeholder={t('networks.ifaceCidrPlaceholder')}
               class="tnum font-mono"
             />
             <p class="text-xs text-muted-foreground mt-1">
-              Introduce una dirección CIDR o déjalo vacío para limpiar IPs en esta tarjeta.
+              {t('networks.ifaceCidrHelp')}
             </p>
           </div>
 
@@ -1375,7 +1385,7 @@
             <Input
               id="iface-gw-input"
               bind:value={ifaceGateway}
-              placeholder="192.168.1.1 (opcional)"
+              placeholder={t('networks.ifaceGatewayPlaceholder')}
               class="tnum font-mono"
             />
           </div>
@@ -1507,7 +1517,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label for="bond-ip-input" class="block font-medium mb-1">
-                  {t('networks.ipSubnet')} (Opcional)
+                  {t('networks.ipSubnet')} ({t('common.optional')})
                 </label>
                 <Input
                   id="bond-ip-input"
@@ -1518,7 +1528,7 @@
               </div>
               <div>
                 <label for="bond-gw-input" class="block font-medium mb-1">
-                  {t('networks.gateway')} (Opcional)
+                  {t('networks.gateway')} ({t('common.optional')})
                 </label>
                 <Input
                   id="bond-gw-input"
@@ -1578,21 +1588,19 @@
               {/each}
             </select>
             <p class="text-xs text-muted-foreground mt-1.5">
-              La interfaz física se incorporará como puerto esclavo del puente seleccionado (ej. {targetBridge}).
+              {t('networks.bridgeSlaveHint', { bridge: targetBridge })}
             </p>
             <div
               class="mt-2.5 p-2.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-500 text-xs space-y-1"
             >
               <span class="font-semibold flex items-center gap-1.5">
                 <Icon name="warning" size={13} />
-                <span>Advertencia de Bucles / STP:</span>
+                <span>{t('networks.stpWarningTitle')}</span>
               </span>
               <p>
-                Si ambas tarjetas van conectadas al mismo switch o router, se activará Spanning Tree
-                (STP) para evitar bucles. Para balanceo de carga real o tolerancia a fallos
-                (failover), la opción recomendada es utilizar <strong
-                  >"Crear Enlace Agregado / Bond"</strong
-                > y asociarlo al puente.
+                {t('networks.stpWarningDescBefore')}
+                <strong>"{t('networks.createBondInline')}"</strong>
+                {t('networks.stpWarningDescAfter')}
               </p>
             </div>
           </div>

@@ -32,13 +32,17 @@ describe('backup pluralisation placeholders', () => {
       runFiles: '{n} fitxer{s} · {size}',
       groupsHint: "Es fa còpia de tota VM de qualsevol d'aquests grups ({n} grup{s}).",
     },
+    zh: {
+      runFiles: '{n} 个文件{s} · {size}',
+      groupsHint: '这些分组中任一组的虚拟机都会被备份（共 {n} 个分组{s}）。',
+    },
   };
 
   for (const [locale, keys] of Object.entries(KEYS)) {
     it(`${locale}: runFiles pluralises with s='' for one file`, () => {
       const out = render(keys.runFiles, { n: 1, s: '', size: '12 MB' });
       expect(out).not.toContain('{');
-      expect(out).toMatch(/1 file|1 archivo|1 fitxer/);
+      expect(out).toMatch(/1 file|1 archivo|1 fitxer|1 个文件/);
     });
 
     it(`${locale}: runFiles pluralises with s='s' for many`, () => {

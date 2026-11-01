@@ -3,7 +3,7 @@
 How to use WebKVM once installed. For installation and technical
 documentation see [INSTALLATION.md](INSTALLATION.md).
 
-[**English**](USAGE.md) • [**Español**](USAGE.es.md)
+[**English**](USAGE.md) • [**Español**](USAGE.es.md) • [**简体中文**](zh/USAGE.md)
 
 ## 1. First login
 

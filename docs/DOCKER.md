@@ -6,7 +6,7 @@ people who prefer managing it with Docker/Compose. It is **not** a different,
 lighter product: the goal is 1:1 feature parity with the native install, with
 one unavoidable exception (self-update, see below).
 
-[**English**](DOCKER.md) • [**Español**](DOCKER.es.md)
+[**English**](DOCKER.md) • [**Español**](DOCKER.es.md) • [**简体中文**](zh/DOCKER.md)
 
 ## How it works
 

@@ -1,6 +1,6 @@
 # RUNBOOK: Operaciones Diarias (Day-2)
 
-[**English**](OPS-DAILY.md) • [**Español**](OPS-DAILY.es.md)
+[**English**](OPS-DAILY.md) • [**Español**](OPS-DAILY.es.md) • [**简体中文**](../zh/runbooks/OPS-DAILY.md)
 
 Objetivo: tareas habituales de un administrador sobre una instalación
 operativa — monitorización, logs, auditoría, jobs, backups y limpieza.

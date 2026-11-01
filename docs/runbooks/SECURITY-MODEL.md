@@ -1,6 +1,6 @@
 # RUNBOOK: Security Model and Auditing
 
-[**English**](SECURITY-MODEL.md) • [**Español**](SECURITY-MODEL.es.md)
+[**English**](SECURITY-MODEL.md) • [**Español**](SECURITY-MODEL.es.md) • [**简体中文**](../zh/runbooks/SECURITY-MODEL.md)
 
 Purpose: Document the security architecture of WebKVM, where operational activities are recorded, and how administrators audit the system. Complements [SECURITY.md](../../SECURITY.md).
 

@@ -77,33 +77,33 @@
             const id = 'async:' + j.id;
             const pct = Math.min(100, Math.max(0, Math.round(j.progress || 0)));
             if (j.status === 'running' || j.status === 'queued') {
-              let title = j.name || 'Operación en segundo plano';
+              let title = j.name || t('taskCenter.backgroundOperation');
               let kind = 'general';
               if (title.startsWith('clone:')) {
                 kind = 'clone';
-                title = `Clonando VM: ${title.slice(6)}`;
+                title = t('taskCenter.cloningVm', { name: title.slice(6) });
               } else if (title.startsWith('batch-clone:')) {
                 kind = 'clone';
-                title = `Clonado en lote: ${title.slice(12)}`;
+                title = t('taskCenter.batchClone', { name: title.slice(12) });
               } else if (title.startsWith('snapshot:')) {
                 kind = 'snapshot';
-                title = `Creando instantánea: ${title.slice(9)}`;
+                title = t('taskCenter.creatingSnapshot', { name: title.slice(9) });
               } else if (title.startsWith('move ')) {
                 kind = 'storage';
-                title = `Moviendo disco: ${title.slice(5)}`;
+                title = t('taskCenter.movingDisk', { name: title.slice(5) });
               }
               upsertTask({
                 id,
                 kind,
                 title,
                 pct,
-                message: j.message || (j.status === 'queued' ? 'En cola...' : `${pct}%`),
+                message: j.message || (j.status === 'queued' ? t('taskCenter.queued') : `${pct}%`),
                 status: 'running',
               });
             } else if (j.status === 'done' || j.status === 'completed') {
-              finishTask(id, 'success', j.message || 'Completado con éxito', 100);
+              finishTask(id, 'success', j.message || t('taskCenter.completedSuccess'), 100);
             } else if (j.status === 'error') {
-              finishTask(id, 'error', j.error || j.message || 'Error en la operación', pct);
+              finishTask(id, 'error', j.error || j.message || t('taskCenter.operationFailed'), pct);
             }
           }
         }

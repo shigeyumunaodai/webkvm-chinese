@@ -2,7 +2,7 @@
 
 A comprehensive technical reference for the WebKVM REST API and WebSocket interfaces.
 
-[**English**](API.md) • [**Español**](API.es.md)
+[**English**](API.md) • [**Español**](API.es.md) • [**简体中文**](zh/API.md)
 
 ---
 

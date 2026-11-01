@@ -2,7 +2,7 @@
 
 Comparativa técnica detallada y objetiva entre **WebKVM**, **Proxmox VE**, **Cockpit (Machines)**, **virt-manager** y **Portainer**.
 
-[**English**](COMPARISON.md) • [**Español**](COMPARISON.es.md)
+[**English**](COMPARISON.md) • [**Español**](COMPARISON.es.md) • [**简体中文**](zh/COMPARISON.md)
 
 ---
 

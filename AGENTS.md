@@ -1,7 +1,7 @@
 # WebKVM — Contexto para desarrollo (AGENTS)
 
 > Documento vivo para agentes y humanos. Actualizar al cerrar cada fase.
-> Última actualización: 2026-10-25. Rama `main` en `v0.1.9`. Working tree limpio.
+> Última actualización: 2026-11-01. Rama `main` en `v0.1.9` (+ localización zh y optimización de red para China, pendiente de commit).
 
 ## 1. Qué es
 
@@ -12,7 +12,7 @@ Binario único Go ~14 MB, ~15 MB RAM en idle. Gestiona **QEMU/KVM + Incus/LXC** 
 - Server: Go 1.26 + CGO libvirt + chi + JWT + WebSocket + SSE.
 - CLI: `webkvm-cli` (Go puro, sin CGO), zero-token como root.
 - Instalación: `scripts/install-webkvm.sh` → `packaging/standalone/install.sh` (nativo systemd) o Docker (`docker-compose.yml`).
-- Docs usuario en `docs/` (cada `.md` tiene espejo `.es.md`). No duplicar aquí guías de uso; esto es contexto técnico.
+- Docs usuario en `docs/` (cada `.md` tiene espejo `.es.md`) y espejo chino completo en `docs/zh/` (incluye `DEPLOYMENT.md`, la guía completa de despliegue). No duplicar aquí guías de uso; esto es contexto técnico.
 
 ## 2. Mapa del repo
 
@@ -29,11 +29,11 @@ webkvm/
     src/lib/components/vm-detail/  16 submódulos (overview/hardware/disks/net/usb/pci/console/metrics/...)
     src/lib/stores/  15 stores .svelte.js (auth, events, tasks, theme, terminalSettings, ...)
     src/lib/utils/   18 helpers + 18 *.test.js
-    src/lib/i18n.svelte.js  11k líneas, locales en/es/ca
+    src/lib/i18n.svelte.js  ~15.6k líneas, locales en/es/ca/zh (3.797 claves por idioma)
     dist/            salida vite (no editar; la regenera make)
   scripts/           instaladores y utilidades (ver §5)
   packaging/         standalone/ (install/update/uninstall canónicos), nfpm deb/rpm, arch PKGBUILD, docker/
-  docs/ + docs/runbooks/  guías usuario y runbooks ops
+  docs/ + docs/runbooks/ + docs/zh/  guías usuario y runbooks ops (zh = espejo chino completo)
   Dockerfile, docker-compose.yml, docker-entrypoint.sh
   Makefile (SHELL=bash, VERSION sin `v`), install.sh, .env.example
   .github/workflows/  ci.yml, release.yml, docker-publish.yml
@@ -80,20 +80,20 @@ Ficheros grandes (orientación, no editar monolitos sin descomponer):
 - `routes/MultiView.svelte`: video-wall noVNC vía `iframe /console/{id}?vt=&embedded=1`, grid 1-4 cols, `postMessage` broadcast, persistencia `webkvm.multiview.*`.
 - `stores/tasks.svelte.js` + `TaskDrawer.svelte` + `TaskCenter.svelte`: drawer `Ctrl+J`, altura 160-600px (`webkvm.taskdrawer.height.v1`), split lista+logs.
 - `stores/events.svelte.js`: `EventSource /api/events` (cookie, sin ticket), backoff 1s→30s. Un solo punto de consolidación SSE: no crear más `setInterval` de polling.
-- i18n `src/lib/i18n.svelte.js`: `t(key,vars)`, locales `en/es/ca`, persistencia `webkvm.locale`. **Toda string visible debe tener clave en los 3 idiomas.** Verificar con `scripts/check-i18n.sh`.
+- i18n `src/lib/i18n.svelte.js`: `t(key,vars)`, locales `en/es/ca/zh`, persistencia `webkvm.locale`; `<html lang>` se sincroniza (zh→`zh-CN`) y cronstrue usa `zh_CN`. **Toda string visible debe tener clave en los 4 idiomas** (y ningún texto hardcodeado en las plantillas). Verificar con `scripts/check-i18n.sh` (claves + paridad de placeholders zh).
 - Componentes capitalizados deben estar importados (verifica `scripts/check-undefined-components.sh`).
 - Build: `vite build` → `frontend/dist/` (`manualChunks`: vendor-xterm/novnc/lucide/ui/cron/qr, app, i18n). `make build-backend` copia a `backend/internal/frontend/dist/` y compila con CGO. Dev sin embed: `make dev-backend` (go run :8080) + `make dev-frontend` (vite :5173 con proxy a 8080).
-- Tests: `npm test` (26 node puros `src/lib/**/*.test.js`) y `npm run test:dom` (7 happy-dom `*.dom.test.js`). Config en `vite.config.js` / `vitest.dom.config.js`.
+- Tests: `npm test` (26 ficheros node puros `src/lib/**/*.test.js`, 264 tests) y `npm run test:dom` (8 happy-dom `*.dom.test.js`, 54 tests). Config en `vite.config.js` / `vitest.dom.config.js`.
 
 ## 5. Ops / build / install
 
 - `make build` = frontend + backend (`webkvm`) + cli (`webkvm-cli`). `make binary/dist` empaqueta tarball + 2 binarios + `SHA256SUMS`. `make deb/rpm` (nfpm), `make docker-build`.
 - `make install-systemd`: instala en `/usr/local/bin`, guarda `.previous`, health-check 20s con auto-`rollback`. `make rollback` restaura. `make install` (completo), `install-systemd-force` (sin check), `install-caddy` (`SKIP_INSTALL=1` solo Caddyfile), `regen-cert`, `install-all`, `uninstall` (conserva `/opt/webkvm` y logs).
-- Instalador canónico `packaging/standalone/install.sh`: detecta apt/dnf/pacman, instala runtime (libvirt/qemu/ovmf/swtpm), despliega binario precompilado (nunca compila en destino), escribe `config.json`, TLS, `enable --now`, health-check. Vars: `WEBKVM_*`, `NETWORK_MODE`, `NONINTERACTIVE`.
-- `scripts/`: `setup-network.sh` (bridge/NAT), `setup-bridge.sh`, `generate-self-signed.sh`, `install-caddy-systemd.sh`, `detect-webkvm-endpoint.sh` (usado por Makefile, no hardcodear 8080), `smoke.sh` (E2E pool→volumen→define→start→teardown), `build-in-docker.sh`, `webkvm-backup.sh`, `check-i18n.*`, `check-undefined-components.*`.
+- Instalador canónico `packaging/standalone/install.sh`: detecta apt/dnf/pacman, instala runtime (libvirt/qemu/ovmf/swtpm), despliega binario precompilado (nunca compila en destino), escribe `config.json`, TLS, `enable --now`, health-check. Vars: `WEBKVM_*`, `NETWORK_MODE`, `NONINTERACTIVE`; aceleración China opcional: `--cn-mirrors[=…]`, `--cn-components=`, `--github-proxy=` / `WEBKVM_CN_MIRRORS`, `WEBKVM_CN_COMPONENTS`, `WEBKVM_GH_PROXY`.
+- `scripts/`: `setup-network.sh` (bridge/NAT), `setup-bridge.sh`, `generate-self-signed.sh`, `install-caddy-systemd.sh`, `detect-webkvm-endpoint.sh` (usado por Makefile, no hardcodear 8080), `smoke.sh` (E2E pool→volumen→define→start→teardown), `build-in-docker.sh`, `webkvm-backup.sh`, `check-i18n.*`, `check-undefined-components.*`, `cn-mirrors.sh` (换源/镜像中国 + backup/restore/dry-run; ver `docs/zh/CHINA-NETWORK.md`), `qa/test-cn-mirrors.sh` (tests offline con `--root`, macOS/CI).
 - Systemd `scripts/webkvm.service`: `After libvirtd/network-online`, root, `DATA_DIR=/opt/webkvm`, `ExecStart=/usr/local/bin/webkvm`, hardening con `ReadWritePaths`.
 - Docker: imagen `slaker1908/webkvm:latest`, `network_mode:host`, `privileged:true`, `pid:host`. Monta `/opt/webkvm` en misma ruta, `/dev:rslave`, `/var/run/libvirt`, sockets systemd, `/etc/passwd+shadow+group+pam.d:ro`. No bundlea libvirtd.
-- CI `.github/workflows/`: `ci.yml` (frontend: lint+prettier+i18n+undefined+test+build; backend: libvirt-dev + reuse artifact frontend-dist + golangci-lint + `go test -race`; packaging: `test-installer.sh`), `release.yml` (tag `v*` → tarball+deb/rpm+SHA256 fail-closed), `docker-publish.yml`.
+- CI `.github/workflows/`: `ci.yml` (frontend: lint+prettier+i18n en/es/ca/zh+undefined+test+build; backend: libvirt-dev + reuse artifact frontend-dist + golangci-lint + `go test -race`; packaging: `test-installer.sh`), `release.yml` (tag `v*` → tarball+deb/rpm+SHA256 fail-closed; el tarball incluye `scripts/cn-mirrors.sh`), `docker-publish.yml`.
 - Datadir `/opt/webkvm` es única fuente de estado (users, jwt.key, config, pools-meta). Backup sin qcow2/iso.
 
 ## 6. Estado actual (Fases 1-6 hechas, ver CONTEXT_NOTES.md)
@@ -109,7 +109,8 @@ Ficheros grandes (orientación, no editar monolitos sin descomponer):
 - F9 (0.1.8-dev): Rediseño radical del subsistema de aplicaciones de terceros (Helper Scripts / App Store): reemplazo del crawler de 600+ peticiones individuales a GitHub API (que moría por rate limit 403) por una ingesta streaming en un único tarball comprimido de 630 KB (`catalog.go`), parseando e indexando los 625 scripts en solo 0.65 segundos. Arranque automático del contenedor en el deploy (`started: true`), generación de credenciales automáticas sin colisión de nombres de grupo (`ubuntu`, password aleatorio de 12 chars), saneamiento de nombres de sugerencia (eliminación de prefijos `cs-` y sufijos aleatorios feos), enlace directo a la instancia/consola en el modal de éxito y tarjetas UI completamente modernizadas con insignias de puerto de servicio (`:3000`), tags, specs y avatares (`7f94a48`). Desplegado y verificado en vivo en VM 101 con despliegue de AdGuard Home en 8.8 segundos.
 - F10 (0.1.8): Corrección de la fricción real reportada en el [issue #5](https://github.com/Slaker19/webkvm/issues/5) del repositorio: (1) cookies de sesión/CSRF sin flag `Secure` cuando el TLS está apagado y `WEBKVM_COOKIE_SECURE` no está fijado explícitamente — el navegador descartaba la sesión en HTTP plano y el login entraba en bucle (helper `cookiesSecure` + `TestCookiesSecure`); (2) subcomando `webkvm-cli users update` (password/role/email/active vía `PUT /api/users/{username}`), antes anunciado en la ayuda pero inexistente; (3) autodetección del endpoint local en `webkvm-cli` leyendo `{DATA_DIR}/config.json` (puerto, bind, HTTP/HTTPS) con reintento único de esquema ante desajuste HTTPS/HTTP y zero-token extendido a binds LAN locales de la propia máquina (tests `TestDetectLocalServer` / `TestClient_SchemeFlipRetry`); (4) el instalador ya no crea `vmbr1` + dnsmasq en modo solo-bridge (opt-in con `--network=both` o `WEBKVM_NAT_BRIDGE=1`, coherente con el contrato documentado del modo).
 - F11 (0.1.9-dev): Aceleración GPU y refactorización modular integral: (1) Aceleración GPU 1-clic (`/dev/dri/renderD128`) para contenedores Incus en creación (`VmCreate.svelte`) y caliente (`VmHardwareTab.svelte`); (2) Passthrough de dispositivos PCI para contenedores Incus (`AttachPCIDevice`/`DetachPCIDevice` y `VmPciCard.svelte`); (3) Descomposición del monolito `backend/internal/api/vms.go` (2.216L → 494L) en 5 submódulos de dominio limpios (`vm_lifecycle.go`, `vm_snapshots.go`, `vm_devices.go`, `vm_clones.go`, `vm_export_import.go`); (4) Unificación de `vmScheduler` con `computeBackend` para soporte multiplataforma KVM/Incus; (5) Poda manual de copias de seguridad bajo demanda (`POST /api/backup/targets/{id}/prune`, `webkvm-cli backup prune`, botón en `Backup.svelte`); (6) Soporte de etiquetado 802.1Q VLAN en `VmDetail.svelte` y badges visuales en `VmNetCard.svelte`. Cobertura total de pruebas en verde.
-- Últimos commits: `7f53303 feat(gpu,pci)`, `e036452 refactor(api)`, `855ba22 feat(backup)`, `e0a838e feat(network)`, `a0a4279 chore(version)`.
+- F12 (0.1.9-dev, local): Localización completa al chino simplificado y optimización de red para China continental. (1) i18n `zh` completo: 3.797 claves simétricas en `en/es/ca/zh` (incluye `cronPicker`, `imageCatalog` (catálogo de imágenes Incus), `keyboardShortcuts`, `cronstrue` zh_CN, `<html lang>` sincronizado y selector de idioma); se eliminaron ~460 textos hardcodeados (ES/EN) de AppStore, ImageHub, VmList, Networks, VmCreate, VmDetail, MultiView, Storage, vm-detail, Snippets, SecurityJail, Terminal, KeyboardShortcuts, TaskCenter/TaskDrawer, Pagination, a11y (Close/Dismiss/Select), etc. moviéndolos a claves i18n; `check-i18n.mjs` valida 4 locales y paridad de placeholders zh. (2) Optimización de red doméstica: `scripts/cn-mirrors.sh` (apt legacy+deb822, dnf Fedora/RHEL/Alma/Rocky/CentOS Stream/EPEL, pacman; pip/npm/go/docker/cargo/git; backup con manifest, `--restore`, `--dry-run`, `--root` simulado, allowlist de hosts; logs en chino), flags `--cn-mirrors/--cn-components/--github-proxy` en `install.sh`, `WEBKVM_GH_PROXY`/`WEBKVM_INSTALL_TARBALL_URL` en `scripts/install-webkvm.sh`, targets `make cn-mirrors`/`make test-cn-mirrors`, tests offline 91/91 y `test-installer.sh` OK. (3) Documentación china: `README.zh.md` + `docs/zh/` (DEPLOYMENT, INSTALLATION, USAGE, CLI, DOCKER, API, FAQ, ARCHITECTURE, COMPARISON, SECURITY, CHINA-NETWORK, runbooks) y navegación trilingüe en los docs EN/ES. Verificado: `npm test` 264/264, `npm run test:dom` 54/54, `npm run lint`, `prettier --check`, `npm run build`, `check-i18n.sh`, `check-undefined-components.sh`.
+- Últimos commits: `7f53303 feat(gpu,pci)`, `e036452 refactor(api)`, `855ba22 feat(backup)`, `e0a838e feat(network)`, `a0a4279 chore(version)` (la fase F12 aún no está commiteada en este checkout).
 
 Pendiente conocido (de `AUDIT_IMPROVEMENTS.md`): quedan god-objects (`api/vms.go`, `api/storage.go`, `Storage.svelte` ~5000L con 8 pestañas), resto de `exec` sin `CommandRunner` (`mdraid`, `zvol`), resto de `setInterval` vs SSE, preflight contenedor FS-ro.
 Limitación funcional detectada (para 0.1.8): `CreateHostRAID` crea el arreglo MDRAID vía `mdadm`, pero NO formatea el dispositivo `/dev/md*` resultante con un sistema de archivos ni lo monta en `/mnt` / systemd mount units. Se necesita opción/flujo post-creación para formatear y montar el RAID y poder usarlo directamente como storage pool de WebKVM.
@@ -121,8 +122,8 @@ Limitación funcional detectada (para 0.1.8): `CreateHostRAID` crea el arreglo M
 3. Antes de dar por hecha una tarea:
    - Backend: `cd backend && go test -short ./...` (y `go vet` / golangci si se tocó API/auth/libvirt). Nuevo `exec` → vía `CommandRunner` + test con `MockRunner`.
    - Frontend: `cd frontend && npm test && npm run test:dom`, `npm run build`, `bash ../scripts/check-i18n.sh`, `bash ../scripts/check-undefined-components.sh`.
-   - Si se tocó install/docker: `packaging/standalone/test-installer.sh` y/o `smoke.sh`.
-4. Convenciones: no re-monolitizar `vm-detail/` ni `domain_*.go`; handlers vía `compute.Backend`; errores sin `panic`; strings UI con clave en en+es+ca; `localStorage` con clave `webkvm.*`.
+   - Si se tocó install/docker/red doméstica: `packaging/standalone/test-installer.sh`, `bash scripts/qa/test-cn-mirrors.sh` y/o `smoke.sh`.
+4. Convenciones: no re-monolitizar `vm-detail/` ni `domain_*.go`; handlers vía `compute.Backend`; errores sin `panic`; strings UI con clave en en+es+ca+zh (nada hardcodeado en plantillas); `localStorage` con clave `webkvm.*`.
 5. Al cerrar fase: actualizar este archivo (§6 + fecha) y `CHANGELOG.md` si hay cambio visible. No editar `frontend/dist/` ni `backend/internal/frontend/dist/` a mano.
 6. Comandos útiles:
    `systemctl status webkvm` · `journalctl -u webkvm -f` · `curl -kfsS https://127.0.0.1:8080/api/health`
@@ -135,7 +136,8 @@ Limitación funcional detectada (para 0.1.8): `CreateHostRAID` crea el arreglo M
 - Auth/seguridad: `backend/internal/auth/jwt.go|ticket.go|vnc_ticket.go|rbac.go`, `SECURITY.md`, `docs/runbooks/SECURITY-MODEL.md`
 - Dominio: `backend/internal/libvirt/domain*.go`, `backend/internal/compute/backend.go`
 - UI clave: `frontend/src/routes/VmDetail.svelte`, `frontend/src/lib/components/vm-detail/`, `TerminalPanel.svelte`, `MultiView.svelte`, `TaskDrawer.svelte`, `frontend/src/lib/stores/events.svelte.js`, `frontend/src/lib/i18n.svelte.js`
-- Ops: `Makefile`, `Dockerfile`, `docker-compose.yml`, `scripts/webkvm.service`, `packaging/standalone/install.sh`, `docs/runbooks/RUNBOOKS.md`
+- Ops: `Makefile`, `Dockerfile`, `docker-compose.yml`, `scripts/webkvm.service`, `packaging/standalone/install.sh`, `scripts/cn-mirrors.sh`, `docs/runbooks/RUNBOOKS.md`
+- Docs zh: `README.zh.md`, `docs/zh/DEPLOYMENT.md`, `docs/zh/CHINA-NETWORK.md`, `docs/zh/README.md`
 - Historia: `CHANGELOG.md`, `AUDIT_IMPROVEMENTS.md`, `CONTEXT_NOTES.md`
 
 ## graphify

@@ -1,6 +1,6 @@
 # RUNBOOKS — WebKVM
 
-[**English**](RUNBOOKS.md) • [**Español**](RUNBOOKS.es.md)
+[**English**](RUNBOOKS.md) • [**Español**](RUNBOOKS.es.md) • [**简体中文**](../zh/runbooks/RUNBOOKS.md)
 
 Runbooks operativos para administradores de sistemas (sysadmins). El
 objetivo es que cualquier cambio, incidente o recuperación se resuelva

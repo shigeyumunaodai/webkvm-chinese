@@ -135,6 +135,15 @@
     const remSec = sec % 60;
     return `${min}m ${remSec}s`;
   }
+
+  // finishTask() only records 'success' or 'error' (a running task shows
+  // its percentage instead), so map the terminal states to the shared
+  // labels instead of printing raw uppercase English statuses.
+  function taskStatusLabel(status) {
+    if (status === 'success') return t('common.success');
+    if (status === 'error') return t('common.error');
+    return status ? String(status).toUpperCase() : '';
+  }
 </script>
 
 <!-- Docked Bottom Bar -->
@@ -355,7 +364,7 @@
                           ? 'text-destructive'
                           : 'text-accent'}"
                     >
-                      {task.status === 'running' ? `${task.pct}%` : task.status.toUpperCase()}
+                      {task.status === 'running' ? `${task.pct}%` : taskStatusLabel(task.status)}
                     </span>
                   </div>
                 </div>

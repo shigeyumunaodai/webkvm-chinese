@@ -1,5 +1,6 @@
 <script>
   import { getToasts, dismiss } from '$lib/stores/toast.svelte.js';
+  import { t as translate } from '$lib/i18n.svelte.js';
   import { fly } from 'svelte/transition';
 
   // getToasts() returns the store's current array by value: a plain
@@ -76,7 +77,7 @@
       <button
         onclick={() => dismiss(t.id)}
         class="text-muted-foreground hover:text-foreground transition-colors shrink-0 -mr-1 -mt-1 p-1"
-        aria-label="Dismiss"
+        aria-label={translate('common.dismiss')}
       >
         <svg
           class="w-3.5 h-3.5"

@@ -16,11 +16,17 @@
 #                             WOULD be installed; performs no system
 #                             changes.
 #   --port=N                  Backend HTTP/HTTPS port (default: 8080).
-#   --bind=ADDR                Bind address (default: 0.0.0.0).
+#   --bind=ADDR                Bind address (default: 127.0.0.1, local-only;
+#                             use 0.0.0.0 or a LAN IP to expose the UI, next to HTTPS).
 #   --https=yes|no             Self-signed HTTPS (default: yes).
 #   --domain=NAME               Optional cert SAN domain (default: none).
 #   --network=bridge|nat|both|none   Instance networking (default: bridge
 #                             interactively, both when --yes/unattended).
+#                             bridge = physical LAN bridge (vmbr0);
+#                             both   = vmbr0 + isolated NAT bridge vmbr1
+#                                      (100.0.0.0/24 + dnsmasq + MASQUERADE);
+#                             nat    = legacy libvirt default NAT network only
+#                                      (192.168.122.0/24), no vmbr1.
 #                             Bridge-only mode does NOT create the isolated
 #                             vmbr1 + dnsmasq; set WEBKVM_NAT_BRIDGE=1 to
 #                             create them anyway (--network=both does too).
@@ -33,12 +39,30 @@
 #                             of pinning the current lease as static.
 #   --bridge-static=CIDR         Static IP (CIDR) for the bridge.
 #   --gateway=IP / --dns=IPs     Explicit gateway/DNS for --bridge-static.
+#   --cn-mirrors[=auto|tuna|ustc|aliyun|tencent|huawei]
+#                             Switch the host's system package mirrors (and,
+#                             optionally, pip/npm/go/docker/cargo/git) to a
+#                             mainland-China mirror BEFORE runtime deps are
+#                             installed. Off by default; runs
+#                             scripts/cn-mirrors.sh (see docs/zh/CHINA-NETWORK.md).
+#   --cn-components=LIST       Comma list for --cn-mirrors:
+#                             os,pip,npm,go,docker (+cargo,git).
+#                             Default: os,pip,npm,go,docker.
+#   --github-proxy=URL         Speed up GitHub downloads by prefixing
+#                             https://github.com/... and
+#                             https://raw.githubusercontent.com/... URLs with
+#                             a proxy (e.g. https://ghfast.top/). Used for the
+#                             release tarball / updater downloads and
+#                             forwarded to cn-mirrors for its git component.
 # Every flag has an equivalent WEBKVM_* / NETWORK_MODE / BRIDGE_* env var
 # (flags simply set these before the rest of the script runs); env vars
 # remain supported for scripting and take a back seat to explicit flags.
 #
 # Example — fully unattended, physical bridge + NAT, no containers:
 #   sudo ./install.sh --yes --network=both --incus=no
+#
+# Example — mainland-China network, unattended (switch mirrors first):
+#   sudo ./install.sh --yes --cn-mirrors=auto --github-proxy=https://ghfast.top/
 #
 # From a fresh server this script:
 #   1. Preflight-checks KVM, RAM, disk, arch and network.
@@ -90,6 +114,10 @@ while [[ $# -gt 0 ]]; do
     --bridge-static=*) BRIDGE_STATIC_IP="${1#*=}"; BRIDGE_DHCP="false" ;;
     --gateway=*) BRIDGE_STATIC_GW="${1#*=}" ;;
     --dns=*) BRIDGE_STATIC_DNS="${1#*=}" ;;
+    --cn-mirrors) WEBKVM_CN_MIRRORS="auto" ;;
+    --cn-mirrors=*) WEBKVM_CN_MIRRORS="${1#*=}" ;;
+    --cn-components=*) WEBKVM_CN_COMPONENTS="${1#*=}" ;;
+    --github-proxy=*) WEBKVM_GH_PROXY="${1#*=}" ;;
     -h|--help) usage 0 ;;
     *) echo "unknown flag: $1" >&2; usage 1 ;;
   esac
@@ -118,6 +146,11 @@ BRIDGE_STATIC_DNS="${BRIDGE_STATIC_DNS:-}"
 # (Incus must already be present).
 WEBKVM_INSTALL_INCUS="${WEBKVM_INSTALL_INCUS:-1}"
 WEBKVM_INCUS_ENABLED="${WEBKVM_INCUS_ENABLED:-0}"
+# Optional mainland-China network acceleration (off by default: empty =
+# documented, byte-for-byte identical behaviour). See run_cn_mirrors().
+CN_MIRROR="${WEBKVM_CN_MIRRORS:-}"
+CN_COMPONENTS="${WEBKVM_CN_COMPONENTS:-}"
+GH_PROXY="${WEBKVM_GH_PROXY:-}"
 
 SERVICE="${WEBKVM_SERVICE:-webkvm.service}"
 SERVICE_PATH="/etc/systemd/system/${SERVICE}"
@@ -126,6 +159,7 @@ REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 CERT_DIR="${DATA_DIR}/certs"
 CONFIG_PATH="${DATA_DIR}/config.json"
 SETUP_NETWORK="${REPO_DIR}/scripts/setup-network.sh"
+CN_MIRRORS_SCRIPT="${REPO_DIR}/scripts/cn-mirrors.sh"
 
 PREVIOUS="${BIN}.previous"
 SERVICE_PREVIOUS="${SERVICE_PATH}.previous"
@@ -179,6 +213,102 @@ trap rollback_on_failure EXIT
 log() { printf '[webkvm] %s\n' "$*"; }
 die() { printf '[webkvm] ERROR: %s\n' "$*" >&2; exit 1; }
 warn() { printf '[webkvm] WARNING: %s\n' "$*" >&2; }
+
+# ── Mainland-China network acceleration (opt-in) ───────────────────────
+# Everything below is a no-op unless WEBKVM_CN_MIRRORS / --cn-mirrors is set:
+# the default install path is unchanged. --cn-mirrors delegates the actual
+# mirror rewriting to scripts/cn-mirrors.sh (apt/deb822, dnf, pacman, pip,
+# npm, go, docker, cargo, git) so this installer stays a thin wrapper.
+validate_cn_options() {
+  local host
+  if [[ -n "${CN_MIRROR}" ]]; then
+    case "${CN_MIRROR}" in
+      auto|tuna|ustc|aliyun|tencent|huawei) ;;
+      *) die "invalid --cn-mirrors value: ${CN_MIRROR} (expected auto|tuna|ustc|aliyun|tencent|huawei)" ;;
+    esac
+  fi
+  if [[ -n "${CN_COMPONENTS}" ]]; then
+    case "${CN_COMPONENTS}" in
+      *[!a-z,]*)
+        die "invalid --cn-components value: '${CN_COMPONENTS}' (comma-separated: os,pip,npm,go,docker,cargo,git)"
+        ;;
+    esac
+  fi
+  if [[ -n "${GH_PROXY}" ]]; then
+    case "${GH_PROXY}" in
+      https://*) ;;
+      *) die "invalid --github-proxy value: '${GH_PROXY}' (must be an https:// URL, e.g. https://ghfast.top/)" ;;
+    esac
+    case "${GH_PROXY}" in
+      *[[:space:]]*) die "invalid --github-proxy value: '${GH_PROXY}' contains whitespace" ;;
+      *[!A-Za-z0-9._:/~%@+-]*) die "invalid --github-proxy value: '${GH_PROXY}' contains unsafe characters" ;;
+    esac
+    host="${GH_PROXY#https://}"
+    host="${host%%/*}"
+    [[ -n "${host}" ]] || die "invalid --github-proxy value: '${GH_PROXY}' has no host"
+    GH_PROXY="${GH_PROXY%/}"
+  fi
+}
+# Prefix GitHub download URLs with the configured proxy (https://ghfast.top/
+# style: <proxy>/https://github.com/...). Non-GitHub URLs pass through
+# untouched, so this is safe to call on every download.
+gh_proxy_url() {
+  local url="$1"
+  if [[ -z "${GH_PROXY}" ]]; then
+    printf '%s' "${url}"
+    return 0
+  fi
+  case "${url}" in
+    https://github.com/*|https://raw.githubusercontent.com/*)
+      printf '%s/%s' "${GH_PROXY%/}" "${url}"
+      ;;
+    *) printf '%s' "${url}" ;;
+  esac
+}
+find_cn_mirrors_script() {
+  local cand
+  for cand in \
+    "${CN_MIRRORS_SCRIPT}" \
+    "${SCRIPT_DIR}/cn-mirrors.sh" \
+    "${SCRIPT_DIR}/../scripts/cn-mirrors.sh"; do
+    if [[ -f "${cand}" ]]; then
+      printf '%s' "${cand}"
+      return 0
+    fi
+  done
+  return 1
+}
+# $1 = apply | preview. Never aborts the install: a missing/failed
+# cn-mirrors.sh only warns and the original package mirrors are kept.
+run_cn_mirrors() {
+  local mode="$1" script rc=0
+  local -a args=()
+  if [[ -z "${CN_MIRROR}" ]]; then
+    return 0
+  fi
+  if ! script="$(find_cn_mirrors_script)"; then
+    warn "--cn-mirrors was requested but scripts/cn-mirrors.sh was not found; keeping the original package mirrors"
+    return 0
+  fi
+  args=(--mirror="${CN_MIRROR}" --yes)
+  if [[ -n "${CN_COMPONENTS}" ]]; then
+    args+=(--components="${CN_COMPONENTS}")
+  fi
+  if [[ -n "${GH_PROXY}" ]]; then
+    args+=(--github-proxy="${GH_PROXY}")
+  fi
+  if [[ "${mode}" == "preview" ]]; then
+    args+=(--dry-run)
+    log "PREVIEW: switching package/tool mirrors with scripts/cn-mirrors.sh (dry-run)"
+  else
+    log "switching system package/tool mirrors to a mainland-China mirror (scripts/cn-mirrors.sh)"
+  fi
+  bash "${script}" "${args[@]}" || rc=$?
+  if [[ "${rc}" -ne 0 ]]; then
+    warn "scripts/cn-mirrors.sh exited with code ${rc}; continuing with the original package mirrors"
+  fi
+  return 0
+}
 confirm() { # confirm VAR "question" default
   local var="$1" q="$2" dflt="${3:-}"
   if [[ -n "${!var:-}" ]]; then return; fi
@@ -561,7 +691,7 @@ prompt_settings() {
   # An explicit --network=/NETWORK_MODE= always wins over either default.
   local net_default="bridge"
   [[ "${NONINTERACTIVE}" == 1 ]] && net_default="both"
-  prompt_select NETWORK_MODE "How should instances reach the network?" "bridge|Physical bridge vmbr0 (shared L2 — required, recommended)" "nat|NAT (explicit opt-in, isolated)" "both|Both (explicit opt-in)" "${net_default}"
+  prompt_select NETWORK_MODE "How should instances reach the network?" "bridge|Physical bridge vmbr0 (shared L2 — required, recommended)" "nat|NAT (legacy libvirt default network, explicit opt-in)" "both|Both (explicit opt-in)" "${net_default}"
   if [[ "${NETWORK_MODE}" == "both" || "${NETWORK_MODE}" == "bridge" ]]; then
     if [[ -z "${BRIDGE_DHCP}" && -z "${BRIDGE_STATIC_IP}" && "${NONINTERACTIVE}" == 0 ]]; then
       local ans
@@ -638,6 +768,8 @@ echo ""
 bold "webkvm standalone installer"
 echo ""
 
+# Cheap argument validation first: never touch the host for a typo'd flag.
+validate_cn_options
 preflight
 setup_package_map
 
@@ -648,6 +780,12 @@ if [[ "${DRY_RUN}" == 1 ]]; then
   log "runtime packages that would be installed:"
   local_pkg=""
   for local_pkg in "${RUNTIME_PACKAGES[@]}"; do log "  · ${local_pkg}"; done
+  if [[ -n "${CN_MIRROR}" ]]; then
+    log "cn-mirrors          : enabled (--mirror=${CN_MIRROR}${CN_COMPONENTS:+, --components=${CN_COMPONENTS}}) — PREVIEW ONLY"
+  fi
+  if [[ -n "${GH_PROXY}" ]]; then
+    log "github proxy        : ${GH_PROXY} (release tarball / updater downloads)"
+  fi
   if [[ "${WEBKVM_INSTALL_INCUS}" == "1" ]]; then
     log "Incus (contenedores)  : instalación automática (WEBKVM_INSTALL_INCUS=1) + WEBKVM_INCUS_ENABLED=1"
   elif [[ "${WEBKVM_INCUS_ENABLED}" == "1" ]]; then
@@ -664,6 +802,9 @@ if [[ "${DRY_RUN}" == 1 ]]; then
     log "fuente binario      : descarga desde BIN_URL"
   else
     log "fuente binario      : release tarball oficial (webkvm-*.tar.gz) de GitHub Releases (extracción automática del binario)"
+  fi
+  if [[ -n "${CN_MIRROR}" ]]; then
+    run_cn_mirrors preview
   fi
   log "dry-run OK — sistema intacto."
   exit 0
@@ -698,6 +839,13 @@ if command -v ss >/dev/null 2>&1 && ss -ltnH 2>/dev/null | grep -q ":${DEFAULT_P
     die "port ${DEFAULT_PORT} is already in use by another process; free it or choose another port with WEBKVM_PORT"
   fi
 fi
+
+# Mainland-China network acceleration (opt-in): rewrite the host's
+# package/tool mirrors BEFORE the first apt/dnf/pacman transaction so the
+# runtime-dependency install below already uses the fast mirror. Missing or
+# failing cn-mirrors.sh only warns; the default install path is untouched
+# because run_cn_mirrors() returns immediately when CN_MIRROR is empty.
+run_cn_mirrors apply
 
 log "installing runtime dependencies (${PKG})"
 pkg_update || log "warning: could not refresh the package index; continuing anyway"
@@ -735,7 +883,10 @@ elif [[ -n "${BIN_URL}" ]]; then
   [[ "${BIN_SHA256}" =~ ^[[:xdigit:]]{64}$ ]] || die "WEBKVM_BINARY_SHA256 must be a 64-character SHA-256 when downloading a binary"
   DOWNLOADED_BIN="$(mktemp /tmp/webkvm.XXXXXX)"
   log "downloading release binary"
-  curl --fail --location --retry 3 --proto '=https' --tlsv1.2 "${BIN_URL}" -o "${DOWNLOADED_BIN}"
+  # WEBKVM_GH_PROXY / --github-proxy: prefix github.com host with a download
+  # accelerator (e.g. https://ghfast.top/). Other hosts pass through.
+  PROXIED_BIN_URL="$(gh_proxy_url "${BIN_URL}")"
+  curl --fail --location --retry 3 --proto '=https' --tlsv1.2 "${PROXIED_BIN_URL}" -o "${DOWNLOADED_BIN}"
   chmod 0755 "${DOWNLOADED_BIN}"
   printf '%s  %s\n' "${BIN_SHA256}" "${DOWNLOADED_BIN}" | sha256sum --check --status || die "downloaded binary checksum mismatch"
   SOURCE_BIN="${DOWNLOADED_BIN}"
@@ -755,7 +906,10 @@ else
   if [[ -n "${TARBALL_URL}" && -n "${SHA256_URL}" ]]; then
     DOWNLOADED_TARBALL="$(mktemp /tmp/webkvm.XXXXXX.tar.gz)"
     log "downloading release tarball from ${TARBALL_URL}"
-    curl --fail --location --retry 3 --proto '=https' --tlsv1.2 "${TARBALL_URL}" -o "${DOWNLOADED_TARBALL}" || die "release tarball download failed"
+    # --github-proxy speeds up the GitHub release CDN download; the checksum
+    # is still fetched from (and verified against) the official SHA256SUMS.
+    PROXIED_TARBALL_URL="$(gh_proxy_url "${TARBALL_URL}")"
+    curl --fail --location --retry 3 --proto '=https' --tlsv1.2 "${PROXIED_TARBALL_URL}" -o "${DOWNLOADED_TARBALL}" || die "release tarball download failed"
     TARBALL_NAME=$(basename "${TARBALL_URL}")
     # Fail closed: the extracted binary runs as root — installing it
     # unverified would be an avatar of RCE.
@@ -776,7 +930,7 @@ else
       die "release tarball does not contain backend/webkvm"
     fi
   else
-    die "no webkvm binary found. Provide one with WEBKVM_BINARY=<path>, WEBKVM_BINARY_URL=<https>+WEBKVM_BINARY_SHA256, build it with 'make dist' (the server never compiles), or check that a GitHub release for Slaker19/webkvm exists."
+    die "no webkvm binary found. Provide one with WEBKVM_BINARY=<path>, WEBKVM_BINARY_URL=<https>+WEBKVM_BINARY_SHA256, build it with 'make dist' (the server never compiles), or check that a GitHub release for Slaker19/webkvm exists. If api.github.com is blocked, set WEBKVM_BINARY_URL (a direct release asset URL) or WEBKVM_UPDATE_REF and retry with --github-proxy=https://ghfast.top/ for the GitHub CDN."
   fi
 fi
 [[ -x "${SOURCE_BIN}" ]] || die "binary not found: ${SOURCE_BIN}"
@@ -824,7 +978,8 @@ elif [[ -n "${BIN_URL}" ]]; then
   else
     cli_url="${BIN_URL}-cli"
   fi
-  if curl --fail --silent --location --retry 2 --proto '=https' --tlsv1.2 "${cli_url}" -o "${DOWNLOADED_BIN}.cli" 2>/dev/null; then
+  PROXIED_CLI_URL="$(gh_proxy_url "${cli_url}")"
+  if curl --fail --silent --location --retry 2 --proto '=https' --tlsv1.2 "${PROXIED_CLI_URL}" -o "${DOWNLOADED_BIN}.cli" 2>/dev/null; then
     CLI_SRC="${DOWNLOADED_BIN}.cli"
     chmod 0755 "${CLI_SRC}"
   fi
@@ -882,8 +1037,10 @@ if [[ ! -f "${UPDATE_SRC}" ]]; then
     log "WARNING: could not determine a release tag for update.sh; not downloading it from a moving branch"
     UPDATE_REF=""
   fi
+  UPDATE_RAW_URL="https://raw.githubusercontent.com/Slaker19/webkvm/${UPDATE_REF}/packaging/standalone/update.sh"
+  PROXIED_UPDATE_URL="$(gh_proxy_url "${UPDATE_RAW_URL}")"
   if [[ -n "${UPDATE_REF}" ]] && curl --fail --silent --location --retry 3 --proto '=https' --tlsv1.2 \
-      "https://raw.githubusercontent.com/Slaker19/webkvm/${UPDATE_REF}/packaging/standalone/update.sh" \
+      "${PROXIED_UPDATE_URL}" \
       -o "${UPDATE_TMP}" 2>/dev/null; then
     # Sanity-check the download: a 404 body or an HTML error page saved as
     # an executable in /usr/local/bin would be both useless and confusing.

@@ -2,7 +2,7 @@
 
 A technical guide to the engineering principles, backend concurrency patterns, and frontend design behind WebKVM.
 
-[**English**](ARCHITECTURE.md) • [**Español**](ARCHITECTURE.es.md)
+[**English**](ARCHITECTURE.md) • [**Español**](ARCHITECTURE.es.md) • [**简体中文**](zh/ARCHITECTURE.md)
 
 ---
 

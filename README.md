@@ -11,7 +11,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](LICENSE)
 [![Zero Dependencies](https://img.shields.io/badge/Runtime_Dependencies-0-success.svg)](#architecture)
 
-[**English**](README.md) • [**Español**](README.es.md) • [**Documentation**](docs/USAGE.md) • [**FAQ**](docs/FAQ.md) • [**CLI Guide**](docs/CLI.md) • [**API Reference**](docs/API.md)
+[**English**](README.md) • [**Español**](README.es.md) • [**简体中文**](README.zh.md) • [**Documentation**](docs/USAGE.md) • [**FAQ**](docs/FAQ.md) • [**CLI Guide**](docs/CLI.md) • [**API Reference**](docs/API.md)
 
 </div>
 
@@ -74,6 +74,9 @@ The installer auto-detects your package manager (`apt`, `dnf`, `pacman`), instal
 
 **Access the Web UI**:
 - URL: `https://<YOUR-SERVER-IP>:8080` (or `https://localhost:8080` if running locally)
+  - The installer binds to **127.0.0.1** by default. For LAN access pass `--bind=0.0.0.0`
+    (or a LAN IP) and keep HTTPS enabled, use an SSH tunnel, or put a TLS reverse
+    proxy in front. See [docs/zh/DEPLOYMENT.md](docs/zh/DEPLOYMENT.md) for details.
 - Initial credentials are displayed at the end of the installation and stored at `/opt/webkvm/admin-password.initial`.
 
 ### Docker Install

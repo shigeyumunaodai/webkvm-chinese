@@ -37,7 +37,7 @@
   function openMountExistingRaid(arr) {
     const pseudoDisk = {
       path: arr.device,
-      model: `Linux Software RAID (${arr.level})`,
+      model: t('storage.linuxSoftwareRaidModel', { level: arr.level }),
       fstype: arr.fstype || '',
       size_human: arr.size_human,
       is_system: false,
@@ -80,9 +80,9 @@
     try {
       await api.syncHostRaid(device, action);
       onRefresh();
-      toast.success(`Acción ${action} iniciada en ${device}`);
+      toast.success(t('storage.raidActionStarted', { action, device }));
     } catch (e) {
-      showStorageErr('RAID Sync Error', e);
+      showStorageErr(t('storage.raidSyncErrorTitle'), e);
     }
   }
 
@@ -96,9 +96,9 @@
         try {
           await api.stopHostRaid(device);
           onRefresh();
-          toast.success(`Array RAID ${device} detenido`);
+          toast.success(t('storage.raidStoppedToast', { device }));
         } catch (e) {
-          toast.error(e.message || 'Error al detener array RAID');
+          toast.error(e.message || t('storage.raidStopError'));
         }
       },
     });
@@ -116,7 +116,7 @@
           onRefresh();
           toast.success(t('storage.raidDestroyed'));
         } catch (e) {
-          toast.error(e.message || 'Error al destruir array RAID');
+          toast.error(e.message || t('storage.raidDestroyError'));
         }
       },
     });
@@ -134,7 +134,7 @@
           toast.success(t('storage.diskUnmounted'));
           onRefresh();
         } catch (e) {
-          toast.error(e.message || 'Error al desmontar disco');
+          toast.error(e.message || t('storage.diskUnmountError'));
         }
       },
     });
@@ -151,18 +151,18 @@
         upsertTask({
           id: taskId,
           kind: 'storage',
-          title: `Borrando disco: ${disk.path}`,
+          title: t('storage.diskWipeTaskTitle', { path: disk.path }),
           pct: 20,
-          message: 'Limpiando firmas de sistema de archivos y particiones...',
+          message: t('storage.diskWipeTaskMsg'),
           status: 'running',
         });
         try {
           await api.wipeHostDisk(disk.path);
-          finishTask(taskId, 'success', `Disco ${disk.path} borrado con éxito`, 100);
+          finishTask(taskId, 'success', t('storage.diskWipeTaskDone', { path: disk.path }), 100);
           toast.success(t('storage.diskWiped'));
           onRefresh();
         } catch (e) {
-          finishTask(taskId, 'error', e.message || 'Error al borrar disco', 20);
+          finishTask(taskId, 'error', e.message || t('storage.diskWipeError'), 20);
           toast.error(e.message);
         }
       },
@@ -176,7 +176,9 @@
       <h3 class="text-sm font-bold text-foreground">{t('storage.hostDisksTitle')}</h3>
       <p class="text-xs text-muted-foreground">
         {@html t('storage.hostDisksDesc', {
-          code: htmlVar('<code class="text-foreground font-mono">/mnt/[nombre]</code>'),
+          code: htmlVar(
+            `<code class="text-foreground font-mono">${t('storage.mountPathExample')}</code>`
+          ),
         })}
       </p>
     </div>
@@ -274,7 +276,7 @@
                 >
               </div>
               <div class="flex items-center gap-1">
-                <span>Sync:</span>
+                <span>{t('storage.syncLabel')}</span>
                 <span
                   class="font-mono font-medium {arr.sync_action === 'idle'
                     ? 'text-muted-foreground'
@@ -420,8 +422,8 @@
                               ? 'bg-destructive/15 text-destructive border-destructive/30'
                               : 'bg-muted text-muted-foreground border-border'}"
                         title={disk.smart.healthy
-                          ? 'S.M.A.R.T. Saludable'
-                          : 'Atención / Fallo S.M.A.R.T.'}
+                          ? t('smart.healthyTitle')
+                          : t('smart.warningTitle')}
                       >
                         SMART: {disk.smart.status}
                       </span>
@@ -432,7 +434,7 @@
                             : disk.smart.temperature_c >= 45
                               ? 'text-warning font-semibold'
                               : 'text-muted-foreground'}"
-                          title="Temperatura"
+                          title={t('smart.temperature')}
                         >
                           {disk.smart.temperature_c}°C
                         </span>
@@ -440,9 +442,9 @@
                       {#if disk.smart.wear_percentage >= 0}
                         <span
                           class="text-[10px] font-mono text-muted-foreground"
-                          title="Desgaste acumulado SSD"
+                          title={t('smart.flashWear')}
                         >
-                          {disk.smart.wear_percentage}% uso
+                          {t('smart.usedPct', { pct: disk.smart.wear_percentage })}
                         </span>
                       {/if}
                     </div>

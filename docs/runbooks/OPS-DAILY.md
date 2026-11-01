@@ -1,6 +1,6 @@
 # RUNBOOK: Day-2 Operations and Maintenance
 
-[**English**](OPS-DAILY.md) • [**Español**](OPS-DAILY.es.md)
+[**English**](OPS-DAILY.md) • [**Español**](OPS-DAILY.es.md) • [**简体中文**](../zh/runbooks/OPS-DAILY.md)
 
 Purpose: Routine administrative tasks on an active WebKVM installation — monitoring, log inspection, audit verification, background jobs, backups, and housekeeping.
 

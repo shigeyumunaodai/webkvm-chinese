@@ -61,7 +61,7 @@
       copiedAlertRules = true;
       setTimeout(() => (copiedAlertRules = false), 2000);
     } catch {
-      toast.error('Failed to copy alert rules');
+      toast.error(t('settings.copyAlertRulesFailed'));
     }
   }
 

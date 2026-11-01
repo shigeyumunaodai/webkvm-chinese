@@ -5,14 +5,51 @@
  * backed by valid Incus/LXD image references and local cached images.
  */
 
+import { t } from '$lib/i18n.svelte.js';
+
 export const INCUS_IMAGE_CATEGORIES = [
-  { id: 'all', label: 'Todas las Distribuciones' },
-  { id: 'local', label: 'Locales (En Caché)' },
-  { id: 'images', label: 'Remotas (images:)' },
-  { id: 'popular', label: 'Populares / Servidor' },
-  { id: 'minimal', label: 'Ligeras / Microservicios' },
-  { id: 'enterprise', label: 'Enterprise / RHEL' },
-  { id: 'dev', label: 'Desarrollo / Rolling' },
+  {
+    id: 'all',
+    get label() {
+      return t('imageCatalog.catAll');
+    },
+  },
+  {
+    id: 'local',
+    get label() {
+      return t('imageCatalog.catLocal');
+    },
+  },
+  {
+    id: 'images',
+    get label() {
+      return t('imageCatalog.catImages');
+    },
+  },
+  {
+    id: 'popular',
+    get label() {
+      return t('imageCatalog.catPopular');
+    },
+  },
+  {
+    id: 'minimal',
+    get label() {
+      return t('imageCatalog.catMinimal');
+    },
+  },
+  {
+    id: 'enterprise',
+    get label() {
+      return t('imageCatalog.catEnterprise');
+    },
+  },
+  {
+    id: 'dev',
+    get label() {
+      return t('imageCatalog.catDev');
+    },
+  },
 ];
 
 export const INCUS_IMAGE_PRESETS = [
@@ -22,7 +59,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:ubuntu/resolute',
     category: 'popular',
     distro: 'ubuntu',
-    desc: 'Ubuntu 26.04 Resolute LTS (desarrollo / compilación más reciente).',
+    get desc() {
+      return t('imageCatalog.descUbuntu2604');
+    },
     arch: 'x86_64 / arm64',
     badge: '26.04',
     recommended_vcpu: 2,
@@ -41,7 +80,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:ubuntu/24.04',
     category: 'popular',
     distro: 'ubuntu',
-    desc: 'LTS más reciente de Ubuntu con soporte oficial hasta 2029.',
+    get desc() {
+      return t('imageCatalog.descUbuntu2404');
+    },
     arch: 'x86_64 / arm64',
     badge: 'LTS',
     recommended_vcpu: 2,
@@ -54,7 +95,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:ubuntu/22.04',
     category: 'popular',
     distro: 'ubuntu',
-    desc: 'Versión LTS clásica y ampliamente compatible.',
+    get desc() {
+      return t('imageCatalog.descUbuntu2204');
+    },
     arch: 'x86_64 / arm64',
     badge: 'LTS',
     recommended_vcpu: 2,
@@ -67,7 +110,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:debian/forky',
     category: 'dev',
     distro: 'debian',
-    desc: 'Siguiente generación de Debian 14 con paquetería de última hornada.',
+    get desc() {
+      return t('imageCatalog.descDebian14');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Debian 14',
     recommended_vcpu: 2,
@@ -80,9 +125,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:debian/13',
     category: 'popular',
     distro: 'debian',
-    desc: 'Siguiente generación de Debian con paquetería actualizada.',
+    get desc() {
+      return t('imageCatalog.descDebian13');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Testing',
+    get badge() {
+      return t('imageCatalog.badgeTesting');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -93,9 +142,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:debian/12',
     category: 'popular',
     distro: 'debian',
-    desc: 'Debian estable, ideal para servidores de producción y bases de datos.',
+    get desc() {
+      return t('imageCatalog.descDebian12');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Estable',
+    get badge() {
+      return t('imageCatalog.badgeStable');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -106,9 +159,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:debian/11',
     category: 'popular',
     distro: 'debian',
-    desc: 'Debian oldstable optimizada para servicios heredados.',
+    get desc() {
+      return t('imageCatalog.descDebian11');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Oldstable',
+    get badge() {
+      return t('imageCatalog.badgeOldstable');
+    },
     recommended_vcpu: 1,
     recommended_ram_mb: 1024,
     recommended_disk_gb: 10,
@@ -119,9 +176,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:debian/sid',
     category: 'dev',
     distro: 'debian',
-    desc: 'Rama inestable de Debian para desarrolladores y bleeding-edge.',
+    get desc() {
+      return t('imageCatalog.descDebianSid');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Unstable',
+    get badge() {
+      return t('imageCatalog.badgeUnstable');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 15,
@@ -134,7 +195,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:alpine/3.24',
     category: 'minimal',
     distro: 'alpine',
-    desc: 'Alpine Linux versión más reciente.',
+    get desc() {
+      return t('imageCatalog.descAlpine324');
+    },
     arch: 'x86_64 / arm64',
     badge: '3.24',
     recommended_vcpu: 1,
@@ -147,7 +210,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:alpine/3.23',
     category: 'minimal',
     distro: 'alpine',
-    desc: 'Alpine Linux versión reciente estable.',
+    get desc() {
+      return t('imageCatalog.descAlpine323');
+    },
     arch: 'x86_64 / arm64',
     badge: '3.23',
     recommended_vcpu: 1,
@@ -160,7 +225,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:alpine/3.22',
     category: 'minimal',
     distro: 'alpine',
-    desc: 'Alpine Linux versión estable.',
+    get desc() {
+      return t('imageCatalog.descAlpine322');
+    },
     arch: 'x86_64 / arm64',
     badge: '3.22',
     recommended_vcpu: 1,
@@ -173,7 +240,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:alpine/3.21',
     category: 'minimal',
     distro: 'alpine',
-    desc: 'Ultraligera basada en musl y BusyBox (~5MB). Máximo rendimiento y bajo consumo.',
+    get desc() {
+      return t('imageCatalog.descAlpine321');
+    },
     arch: 'x86_64 / arm64',
     badge: '5 MB',
     recommended_vcpu: 1,
@@ -186,7 +255,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:alpine/3.20',
     category: 'minimal',
     distro: 'alpine',
-    desc: 'Versión estable consolidada de Alpine Linux.',
+    get desc() {
+      return t('imageCatalog.descAlpine320');
+    },
     arch: 'x86_64 / arm64',
     badge: '5 MB',
     recommended_vcpu: 1,
@@ -199,7 +270,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:alpine/edge',
     category: 'minimal',
     distro: 'alpine',
-    desc: 'Rama rolling de vanguardia para pruebas de paquetes y bleeding-edge.',
+    get desc() {
+      return t('imageCatalog.descAlpineEdge');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Edge',
     recommended_vcpu: 1,
@@ -212,9 +285,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:voidlinux',
     category: 'minimal',
     distro: 'void',
-    desc: 'Distribución independiente ligera con gestor XBPS y runit.',
+    get desc() {
+      return t('imageCatalog.descVoidGlibc');
+    },
     arch: 'x86_64',
-    badge: 'Lightweight',
+    get badge() {
+      return t('imageCatalog.badgeLightweight');
+    },
     recommended_vcpu: 1,
     recommended_ram_mb: 512,
     recommended_disk_gb: 10,
@@ -225,7 +302,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:voidlinux/musl',
     category: 'minimal',
     distro: 'void',
-    desc: 'Variante ultra compacta de Void Linux compilada contra musl libc.',
+    get desc() {
+      return t('imageCatalog.descVoidMusl');
+    },
     arch: 'x86_64',
     badge: 'musl',
     recommended_vcpu: 1,
@@ -238,9 +317,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:openwrt/23.05',
     category: 'minimal',
     distro: 'openwrt',
-    desc: 'Sistema operativo embebido ultraligero ideal para enrutamiento y micro-servicios.',
+    get desc() {
+      return t('imageCatalog.descOpenwrt2305');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Router',
+    get badge() {
+      return t('imageCatalog.badgeRouter');
+    },
     recommended_vcpu: 1,
     recommended_ram_mb: 256,
     recommended_disk_gb: 2,
@@ -251,9 +334,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:devuan/daedalus',
     category: 'minimal',
     distro: 'devuan',
-    desc: 'Bifurcación de Debian sin systemd (usa SysVinit / OpenRC / runit).',
+    get desc() {
+      return t('imageCatalog.descDevuan5');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'No-systemd',
+    get badge() {
+      return t('imageCatalog.badgeNoSystemd');
+    },
     recommended_vcpu: 1,
     recommended_ram_mb: 1024,
     recommended_disk_gb: 10,
@@ -266,7 +353,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:rockylinux/10',
     category: 'enterprise',
     distro: 'rocky',
-    desc: 'Siguiente generación compatible con Red Hat Enterprise Linux 10.',
+    get desc() {
+      return t('imageCatalog.descRocky10');
+    },
     arch: 'x86_64 / arm64',
     badge: 'RHEL 10',
     recommended_vcpu: 2,
@@ -279,9 +368,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:rockylinux/9',
     category: 'enterprise',
     distro: 'rocky',
-    desc: '100% compatible binario con Red Hat Enterprise Linux 9 desde remote images:.',
+    get desc() {
+      return t('imageCatalog.descRocky9');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Enterprise',
+    get badge() {
+      return t('imageCatalog.badgeEnterprise');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -292,9 +385,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:rockylinux/8',
     category: 'enterprise',
     distro: 'rocky',
-    desc: 'Versión empresarial con compatibilidad RHEL 8.',
+    get desc() {
+      return t('imageCatalog.descRocky8');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Enterprise',
+    get badge() {
+      return t('imageCatalog.badgeEnterprise');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -305,9 +402,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:almalinux/9',
     category: 'enterprise',
     distro: 'almalinux',
-    desc: 'Enterprise Linux comunitaria compatible 1:1 con RHEL 9.',
+    get desc() {
+      return t('imageCatalog.descAlma9');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Enterprise',
+    get badge() {
+      return t('imageCatalog.badgeEnterprise');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -318,9 +419,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:almalinux/8',
     category: 'enterprise',
     distro: 'almalinux',
-    desc: 'Enterprise Linux comunitaria compatible 1:1 con RHEL 8.',
+    get desc() {
+      return t('imageCatalog.descAlma8');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Enterprise',
+    get badge() {
+      return t('imageCatalog.badgeEnterprise');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -331,7 +436,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:centos/10-Stream',
     category: 'enterprise',
     distro: 'centos',
-    desc: 'Rama upstream más reciente de desarrollo para RHEL 10.',
+    get desc() {
+      return t('imageCatalog.descCentos10');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Stream 10',
     recommended_vcpu: 2,
@@ -344,9 +451,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:centos/9-Stream',
     category: 'enterprise',
     distro: 'centos',
-    desc: 'Rama de desarrollo upstream de Red Hat Enterprise Linux 9.',
+    get desc() {
+      return t('imageCatalog.descCentos9');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Upstream',
+    get badge() {
+      return t('imageCatalog.badgeUpstream');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -357,7 +468,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:oracle/10',
     category: 'enterprise',
     distro: 'oracle',
-    desc: 'Siguiente generación Enterprise optimizada para bases de datos.',
+    get desc() {
+      return t('imageCatalog.descOracle10');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Oracle 10',
     recommended_vcpu: 2,
@@ -370,7 +483,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:oracle/9',
     category: 'enterprise',
     distro: 'oracle',
-    desc: 'Distribución empresarial optimizada para bases de datos y cargas pesadas.',
+    get desc() {
+      return t('imageCatalog.descOracle9');
+    },
     arch: 'x86_64',
     badge: 'UEK',
     recommended_vcpu: 2,
@@ -383,9 +498,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:amazonlinux/2023',
     category: 'enterprise',
     distro: 'amazon',
-    desc: 'Distribución orientada a la nube de AWS optimizada para contenedores.',
+    get desc() {
+      return t('imageCatalog.descAmazon2023');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Cloud',
+    get badge() {
+      return t('imageCatalog.badgeCloud');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 15,
@@ -396,7 +515,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:opensuse/16.0',
     category: 'enterprise',
     distro: 'opensuse',
-    desc: 'Siguiente generación de openSUSE Leap.',
+    get desc() {
+      return t('imageCatalog.descOpensuse160');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Leap 16',
     recommended_vcpu: 2,
@@ -409,7 +530,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:opensuse/15.6',
     category: 'enterprise',
     distro: 'opensuse',
-    desc: 'Distribución estable orientada a servidores empresariales con YaST.',
+    get desc() {
+      return t('imageCatalog.descOpensuse156');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Leap',
     recommended_vcpu: 2,
@@ -424,9 +547,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:archlinux',
     category: 'dev',
     distro: 'arch',
-    desc: 'Rolling release con los paquetes más recientes del kernel y librerías.',
+    get desc() {
+      return t('imageCatalog.descArch');
+    },
     arch: 'x86_64',
-    badge: 'Rolling',
+    get badge() {
+      return t('imageCatalog.badgeRolling');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -437,7 +564,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:fedora/44',
     category: 'dev',
     distro: 'fedora',
-    desc: 'Siguiente generación de Fedora con las tecnologías más punteras.',
+    get desc() {
+      return t('imageCatalog.descFedora44');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Fedora 44',
     recommended_vcpu: 2,
@@ -450,7 +579,9 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:fedora/43',
     category: 'dev',
     distro: 'fedora',
-    desc: 'Versión de vanguardia de Fedora con paquetería actualizada.',
+    get desc() {
+      return t('imageCatalog.descFedora43');
+    },
     arch: 'x86_64 / arm64',
     badge: 'Fedora 43',
     recommended_vcpu: 2,
@@ -463,9 +594,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:fedora/41',
     category: 'dev',
     distro: 'fedora',
-    desc: 'Innovación rápida con las últimas tecnologías del ecosistema Linux.',
+    get desc() {
+      return t('imageCatalog.descFedora41');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Cutting Edge',
+    get badge() {
+      return t('imageCatalog.badgeCuttingEdge');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -476,9 +611,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:fedora/40',
     category: 'dev',
     distro: 'fedora',
-    desc: 'Versión estable de Fedora para desarrollo y servidores.',
+    get desc() {
+      return t('imageCatalog.descFedora40');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Estable',
+    get badge() {
+      return t('imageCatalog.badgeStable');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -489,9 +628,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:nixos/26.05',
     category: 'dev',
     distro: 'nixos',
-    desc: 'Distribución declarativa y reproducible basada en el gestor de paquetes Nix.',
+    get desc() {
+      return t('imageCatalog.descNixos2605');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Declarative',
+    get badge() {
+      return t('imageCatalog.badgeDeclarative');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -502,9 +645,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:opensuse/tumbleweed',
     category: 'dev',
     distro: 'opensuse',
-    desc: 'Rolling release estable con Zypper y soporte de snapshots Btrfs.',
+    get desc() {
+      return t('imageCatalog.descOpensuseTumbleweed');
+    },
     arch: 'x86_64',
-    badge: 'Rolling',
+    get badge() {
+      return t('imageCatalog.badgeRolling');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 2048,
     recommended_disk_gb: 20,
@@ -515,9 +662,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:kali',
     category: 'dev',
     distro: 'kali',
-    desc: 'Especializada en auditorías de seguridad y pruebas de penetración.',
+    get desc() {
+      return t('imageCatalog.descKali');
+    },
     arch: 'x86_64',
-    badge: 'Security',
+    get badge() {
+      return t('imageCatalog.badgeSecurity');
+    },
     recommended_vcpu: 2,
     recommended_ram_mb: 4096,
     recommended_disk_gb: 25,
@@ -528,9 +679,13 @@ export const INCUS_IMAGE_PRESETS = [
     ref: 'images:gentoo',
     category: 'dev',
     distro: 'gentoo',
-    desc: 'Distribución source-based meta altamente optimizable con Portage.',
+    get desc() {
+      return t('imageCatalog.descGentoo');
+    },
     arch: 'x86_64 / arm64',
-    badge: 'Source',
+    get badge() {
+      return t('imageCatalog.badgeSource');
+    },
     recommended_vcpu: 4,
     recommended_ram_mb: 4096,
     recommended_disk_gb: 30,
@@ -538,7 +693,12 @@ export const INCUS_IMAGE_PRESETS = [
   },
 ];
 
-export const CUSTOM_IMAGE = { label: 'Personalizada / Otra…', ref: '' };
+export const CUSTOM_IMAGE = {
+  get label() {
+    return t('imageCatalog.customImage');
+  },
+  ref: '',
+};
 
 /**
  * Friendly label for an image reference. Known presets map to their

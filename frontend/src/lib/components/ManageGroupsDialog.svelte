@@ -66,7 +66,7 @@
     try {
       await api.deleteGroup(g.name);
       onChanged(g.name);
-      toast.success(`Group "${g.name}" removed`);
+      toast.success(t('vms.groupRemoved', { name: g.name }));
     } catch (e) {
       toast.error(e.message);
     }
@@ -124,7 +124,7 @@
                   ></span>
                   <span class="text-sm font-medium truncate" title={g.name}>{g.name}</span>
                   <span class="text-xs text-muted-foreground tnum shrink-0"
-                    >{g.member_count} VM{g.member_count !== 1 ? 's' : ''}</span
+                    >{t('vms.groupVmCount', { n: g.member_count })}</span
                   >
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
@@ -136,15 +136,15 @@
                         ? 'border-foreground'
                         : 'border-transparent'}"
                       style="background-color: {c}"
-                      aria-label="color {c}"
+                      aria-label={`${t('vms.groupColor')} ${c}`}
                     ></button>
                   {/each}
                   <button
                     type="button"
                     onclick={() => deleteGroup(g)}
                     class="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
-                    aria-label="Delete group"
-                    title="Delete group"
+                    aria-label={t('vms.deleteGroup')}
+                    title={t('vms.deleteGroup')}
                   >
                     <svg
                       class="w-3.5 h-3.5"
@@ -166,7 +166,7 @@
     </div>
 
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (open = false)}>Close</Button>
+      <Button variant="outline" onclick={() => (open = false)}>{t('common.close')}</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

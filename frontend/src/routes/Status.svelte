@@ -29,6 +29,11 @@
   let hostMetrics = $state(null);
   let activeAlerts = $state([]);
   let incidents = $state([]);
+  // Alerts currently firing: threshold alerts plus Alertmanager incidents.
+  // Used by the summary line, which also needs the plural marker.
+  let firingCount = $derived(
+    activeAlerts.length + incidents.filter((i) => i.status === 'firing').length
+  );
   let clearingResolved = $state(false);
   let backupJobs = $state([]);
   let dashboardLoading = $state(true);
@@ -430,7 +435,8 @@
       </div>
       <p class="text-xs text-muted-foreground mb-3">
         {t('status.alertsCount', {
-          n: activeAlerts.length + incidents.filter((i) => i.status === 'firing').length,
+          n: firingCount,
+          s: firingCount === 1 ? '' : 's',
         })}
       </p>
       <div class="space-y-1.5 max-h-48 overflow-y-auto">

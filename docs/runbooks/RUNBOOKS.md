@@ -1,6 +1,6 @@
 # RUNBOOKS — WebKVM
 
-[**English**](RUNBOOKS.md) • [**Español**](RUNBOOKS.es.md)
+[**English**](RUNBOOKS.md) • [**Español**](RUNBOOKS.es.md) • [**简体中文**](../zh/runbooks/RUNBOOKS.md)
 
 Operational runbooks for system administrators. The goal is to ensure that every change, incident, or recovery scenario is resolved following tested procedures, copy-paste commands, and explicit *exit criteria*.
 

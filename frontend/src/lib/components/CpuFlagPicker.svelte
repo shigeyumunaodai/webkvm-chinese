@@ -146,7 +146,7 @@
         {:else}
           <span class="w-2 h-2 rounded-full bg-muted-foreground shrink-0"></span>
           <span class="text-muted-foreground">
-            Modo manual activado (sin anulaciones por ahora)
+            {t('vmDetail.cpuFlagsManualNotice')}
           </span>
         {/if}
       </div>
@@ -165,7 +165,7 @@
     <!-- Curated common flags -->
     <div class="space-y-1.5">
       <p class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-        Instrucciones comunes
+        {t('vmDetail.cpuFlagsCommonInstructions')}
       </p>
       <div class="flex flex-wrap gap-1.5">
         {#each common as flag (flag.value)}
@@ -203,8 +203,7 @@
       />
       {#if available && available.length > 0}
         <span class="text-xs text-muted-foreground ml-2">
-          {t('vmDetail.cpuFlagCount', { n: available.length }) ||
-            `${available.length} flags detected on this host`}
+          {t('vmDetail.cpuFlagCount', { n: available.length })}
         </span>
       {/if}
     </div>

@@ -2,7 +2,7 @@
 
 Referencia técnica completa para desarrolladores e integraciones con la API de WebKVM.
 
-[**English**](API.md) • [**Español**](API.es.md)
+[**English**](API.md) • [**Español**](API.es.md) • [**简体中文**](zh/API.md)
 
 ---
 

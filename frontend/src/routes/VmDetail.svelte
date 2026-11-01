@@ -152,13 +152,13 @@
     }
   });
 
-  const networkModels = [
-    { value: 'virtio', label: 'virtio (recommended)' },
-    { value: 'e1000e', label: 'e1000e (Intel, ideal for Windows)' },
-    { value: 'e1000', label: 'e1000 (legacy Intel)' },
-    { value: 'rtl8139', label: 'rtl8139 (Realtek, very compatible)' },
-    { value: 'pcnet', label: 'pcnet (AMD, legacy)' },
-  ];
+  const networkModels = $derived([
+    { value: 'virtio', label: t('vmCreate.networkVirtioRec') },
+    { value: 'e1000e', label: t('vmDetail.nicE1000e') },
+    { value: 'e1000', label: t('vmDetail.nicE1000') },
+    { value: 'rtl8139', label: t('vmDetail.nicRtl8139') },
+    { value: 'pcnet', label: t('vmDetail.nicPcnet') },
+  ]);
 
   // Add Disk state
   let showAddDisk = $state(false);
@@ -574,7 +574,7 @@
       });
       eNotesOriginal = eNotes;
       vm = { ...vm, alias: eAlias, groups };
-      toast.success('Identity updated');
+      toast.success(t('vmDetail.identityUpdated'));
       // Close on success — leaving the dialog open with no visible
       // change (besides a toast easy to miss) read as "the button
       // doesn't do anything" even though the save worked. On error,
@@ -756,7 +756,9 @@
     try {
       const nextState = iface.link_state === 'down' ? 'up' : 'down';
       await api.updateNetIface(vmId, iface.mac, { link_state: nextState });
-      toast.success(nextState === 'up' ? 'Cable de red conectado' : 'Cable de red desconectado');
+      toast.success(
+        nextState === 'up' ? t('vmDetail.netCableConnected') : t('vmDetail.netCableDisconnected')
+      );
       await load();
     } catch (e) {
       toast.error(e.message);
@@ -787,7 +789,7 @@
   // that used to render a second, dead error panel.
   $effect(() => {
     const onErr = (e) => {
-      const msg = (e && (e.message || e.reason)) || 'error desconocido';
+      const msg = (e && (e.message || e.reason)) || t('common.unknownError');
       console.error('[WebKVM UI]', e);
       try {
         toast.error('JS: ' + msg, { duration: 0 });
@@ -1027,7 +1029,7 @@
         memory: snapMemory,
       });
       await api.waitJob(res.job, {
-        title: `Creando instantánea: ${snapName} (${vm?.name || vmId})`,
+        title: t('vmDetail.snapshotCreatingTitle', { name: snapName, vm: vm?.name || vmId }),
         kind: 'snapshot',
       });
       snapName = '';
@@ -1340,7 +1342,7 @@
     try {
       const res = await api.cloneVM(vmId, { name: cName, pool: cPool, linked: cLinked });
       const cloned = await api.waitJob(res.job, {
-        title: `Clonando VM: ${vm?.name || vmId} -> ${cName}`,
+        title: t('vmDetail.cloningTitle', { name: vm?.name || vmId, target: cName }),
         kind: 'clone',
       });
       showClone = false;
@@ -1378,7 +1380,7 @@
     try {
       const res = await api.moveVMStorage(vmId, movePool);
       await api.waitJob(res.id, {
-        title: `Moviendo almacenamiento: ${vm?.name || vmId} -> ${movePool}`,
+        title: t('vmDetail.movingStorageTitle', { name: vm?.name || vmId, pool: movePool }),
         kind: 'storage',
         // A cross-device copy of a large disk can run well past the
         // default 10-minute ceiling; a timeout here would report
@@ -1567,7 +1569,7 @@
       <button
         onclick={onBack}
         class="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
-        aria-label="Back"
+        aria-label={t('vmDetail.back')}
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <polyline points="15 18 9 12 15 6" />
@@ -1902,7 +1904,7 @@
             {#if isContainerVm}
               <Button onclick={gotoSerial} class="w-full">
                 <Terminal class="w-4 h-4 mr-1.5" />
-                Terminal Shell (xterm)
+                {t('vmDetail.terminalShell')}
               </Button>
             {:else}
               {#if (vm.graphics_type || 'both') === 'both'}
@@ -1927,12 +1929,12 @@
                   class="w-full text-xs"
                 >
                   <Terminal class="w-3.5 h-3.5 mr-1" />
-                  Consola SPICE
+                  {t('vmDetail.spiceConsole')}
                 </Button>
               {:else if vm.graphics_type === 'vnc'}
                 <Button onclick={() => openConsole('vnc')} class="w-full text-xs">
                   <Terminal class="w-3.5 h-3.5 mr-1" />
-                  Consola noVNC
+                  {t('vmDetail.vncConsole')}
                 </Button>
               {/if}
               {#if vm.serial_port !== false}
@@ -1988,7 +1990,7 @@
                   class="w-full text-xs"
                 >
                   <CopyPlus class="w-4 h-4 mr-1.5" />
-                  Clonado por Lotes...
+                  {t('batchClone.title')}
                 </Button>
               {/if}
               {#if movePoolOptions.length > 0}
@@ -2104,7 +2106,7 @@
       >
     </p>
     <Dialog.Footer class="gap-2">
-      <Button onclick={() => (showResetError = false)}>OK</Button>
+      <Button onclick={() => (showResetError = false)}>{t('common.ok')}</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
@@ -2122,7 +2124,7 @@
       <p class="text-sm text-muted-foreground">{blockedNotice}</p>
     {/if}
     <Dialog.Footer class="gap-2">
-      <Button onclick={() => (showBlocked = false)}>OK</Button>
+      <Button onclick={() => (showBlocked = false)}>{t('common.ok')}</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
@@ -2557,7 +2559,7 @@
           min="1"
           max="4094"
           bind:value={aNetVlanTag}
-          placeholder="e.g. 10, 20"
+          placeholder={t('vmDetail.vlanTagPlaceholder')}
           class="tnum"
         />
         <p class="text-xs text-muted-foreground mt-1">{t('vmDetail.vlanTagHelper')}</p>
@@ -2844,9 +2846,13 @@
           class="aspect-video w-full border border-border rounded-md bg-muted overflow-hidden flex items-center justify-center"
         >
           {#if coverPreview}
-            <img src={coverPreview} alt="cover preview" class="w-full h-full object-cover" />
+            <img
+              src={coverPreview}
+              alt={t('vmDetail.coverPreviewAlt')}
+              class="w-full h-full object-cover"
+            />
           {:else if vm?.cover}
-            <img src={vm.cover} alt="cover" class="w-full h-full object-cover" />
+            <img src={vm.cover} alt={t('vmDetail.coverAlt')} class="w-full h-full object-cover" />
           {:else}
             <div class="text-center text-muted-foreground p-6">
               <svg
@@ -2945,10 +2951,7 @@
               viewBox="0 0 24 24"
               ><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg
             >
-            <span
-              >El cambio de red o puente se aplica en caliente. La modificación de la dirección MAC
-              física requiere apagar la máquina.</span
-            >
+            <span>{t('vmDetail.netChangeHint')}</span>
           </div>
         {/if}
         {#if !vm?.networks || vm.networks.length === 0}

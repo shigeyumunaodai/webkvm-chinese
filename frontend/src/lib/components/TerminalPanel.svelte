@@ -241,7 +241,7 @@
         if (event.code === 4409) {
           status = 'closed';
           initTerm();
-          appendLine('[Console opened in another tab/window — click Restart to reclaim]');
+          appendLine(t('terminal.consoleInOtherTab'));
           return;
         }
         if (!openedThisAttempt) {
@@ -249,15 +249,13 @@
           if (failedAttempts >= 2) {
             status = 'error';
             initTerm();
-            appendLine(
-              '[Could not open console: is the host or VM available? Click Restart to retry]'
-            );
+            appendLine(t('terminal.consoleUnavailable'));
             return;
           }
         }
         if (status !== 'error') status = 'closed';
         if (!showedDisconnect) {
-          appendLine('\r\n[Disconnected — reconnecting...]');
+          appendLine('\r\n' + t('terminal.disconnectedReconnecting'));
           showedDisconnect = true;
         }
         if (autoRetry && status !== 'error') {
@@ -269,7 +267,7 @@
     } catch (e) {
       status = 'error';
       initTerm();
-      appendLine('[Error obtaining ticket: ' + e.message + ']');
+      appendLine(t('terminal.ticketError', { error: e.message }));
     }
   }
 
@@ -666,7 +664,7 @@
           type="button"
           onclick={() => sendKey('ESC')}
           class="px-2 py-0.5 rounded bg-background border border-border hover:bg-muted hover:border-foreground/30 text-foreground transition-colors font-semibold shadow-2xs"
-          title="Escape"
+          title={t('terminal.keyEscape')}
         >
           ESC
         </button>
@@ -674,7 +672,7 @@
           type="button"
           onclick={() => sendKey('TAB')}
           class="px-2 py-0.5 rounded bg-background border border-border hover:bg-muted hover:border-foreground/30 text-foreground transition-colors font-semibold shadow-2xs"
-          title="Tabulador"
+          title={t('terminal.keyTab')}
         >
           TAB
         </button>
@@ -682,7 +680,7 @@
           type="button"
           onclick={() => sendKey('CTRL_C')}
           class="px-2 py-0.5 rounded bg-background border border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40 text-foreground transition-colors font-semibold shadow-2xs"
-          title="Enviar Ctrl+C (Interrumpir proceso)"
+          title={t('terminal.sendCtrlC')}
         >
           ^C
         </button>
@@ -690,7 +688,7 @@
           type="button"
           onclick={() => sendKey('CTRL_Z')}
           class="px-2 py-0.5 rounded bg-background border border-border hover:bg-muted hover:border-foreground/30 text-foreground transition-colors font-semibold shadow-2xs"
-          title="Enviar Ctrl+Z (Suspender proceso)"
+          title={t('terminal.sendCtrlZ')}
         >
           ^Z
         </button>
@@ -698,7 +696,7 @@
           type="button"
           onclick={() => sendKey('CTRL_D')}
           class="px-2 py-0.5 rounded bg-background border border-border hover:bg-muted hover:border-foreground/30 text-foreground transition-colors font-semibold shadow-2xs"
-          title="Enviar Ctrl+D (EOF / Salir)"
+          title={t('terminal.sendCtrlD')}
         >
           ^D
         </button>
@@ -706,9 +704,9 @@
           type="button"
           onclick={() => sendKey('CTRL_L')}
           class="px-2 py-0.5 rounded bg-background border border-border hover:bg-muted hover:border-foreground/30 text-foreground transition-colors font-semibold shadow-2xs"
-          title="Enviar Ctrl+L (Limpiar pantalla)"
+          title={t('terminal.sendCtrlL')}
         >
-          ^L (Clear)
+          {t('terminal.clearShortcut')}
         </button>
 
         <span class="text-border mx-0.5">|</span>

@@ -105,7 +105,7 @@
         ok++;
       } catch (e) {
         failed++;
-        toast.error(`${file.name}: ${e.message}`);
+        toast.error(t('media.uploadFileError', { name: file.name, error: e.message }));
       }
     }
     uploading = false;
