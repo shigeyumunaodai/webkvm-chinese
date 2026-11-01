@@ -159,6 +159,12 @@ if [[ "${rc}" -ne 0 ]]; then
 fi
 
 if ! git diff --name-only --diff-filter=U | grep -q .; then
+  # Format the semantically merged dictionary before committing so the merge
+  # commit stays small (the sync workflow installs frontend deps first).
+  PRETTIER="${ROOT}/frontend/node_modules/.bin/prettier"
+  if [[ -x "${PRETTIER}" ]]; then
+    ( cd frontend && ./node_modules/.bin/prettier --write src/lib/i18n.svelte.js >/dev/null 2>&1 ) || true
+  fi
   git add -A
   if git commit --no-edit >/dev/null; then
     log "merge committed with auto-resolution"

@@ -124,10 +124,26 @@ def eval_literal(text: str):
     return json.loads(node.stdout)
 
 
+def js_string(s: str) -> str:
+    """Emit a JS string literal close to the repo's prettier style (singleQuote)."""
+    escaped_common = (
+        s.replace("\\", "\\\\")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
+    if "'" in s and '"' not in s:
+        # prettier keeps a double-quoted string when that avoids escapes
+        return '"' + escaped_common.replace('"', '\\"') + '"'
+    return "'" + escaped_common.replace("'", "\\'") + "'"
+
+
 def serialize(value, depth: int) -> str:
     pad = "  " * depth
     if isinstance(value, str):
-        return json.dumps(value, ensure_ascii=False)
+        return js_string(value)
     if isinstance(value, (int, float, bool)) or value is None:
         return json.dumps(value)
     if isinstance(value, list):
@@ -137,7 +153,7 @@ def serialize(value, depth: int) -> str:
         return "{}"
     lines = []
     for k, v in value.items():
-        key = k if re.match(r"^[A-Za-z_$][A-Za-z0-9_$]*$", k) else json.dumps(k)
+        key = k if re.match(r"^[A-Za-z_$][A-Za-z0-9_$]*$", k) else js_string(k)
         lines.append(f"{pad}  {key}: {serialize(v, depth + 1)},")
     return "{\n" + "\n".join(lines) + f"\n{pad}}}"
 
