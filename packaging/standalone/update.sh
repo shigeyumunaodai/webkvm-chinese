@@ -147,7 +147,7 @@ else
   # (dist/webkvm-<version>-linux_amd64). The tarball is NOT used here:
   # this script installs a binary, and installing a .tar.gz as the
   # binary would brick the service. Exclude webkvm-cli explicitly.
-  BIN_URL=$(curl -fsSL "${RELEASE_API}" 2>/dev/null | grep -o '"browser_download_url": *"[^"]*webkvm-[^"]*linux_amd64[^"]*"' | grep -v 'webkvm-cli' | head -1 | cut -d'"' -f4 || true)
+  BIN_URL=$(curl -fsSL "${RELEASE_API}" 2>/dev/null | grep -o '"browser_download_url": *"[^"]*webkvm-[^"]*linux_amd64[^"]*"' | grep -v 'webkvm-cli' | grep -v '\.tar\.gz' | head -1 | cut -d'"' -f4 || true)
   if [[ -n "${BIN_URL}" ]]; then
     log "downloading release binary from ${BIN_URL}"
     curl --fail --location --retry 3 --proto '=https' --tlsv1.2 "${BIN_URL}" -o "${TMP}" || die "could not download binary"
