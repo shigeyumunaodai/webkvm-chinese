@@ -90,7 +90,7 @@ curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main
 
 ```bash
 # 从 Release 页面下载 tarball 与 SHA256SUMS 后：
-sha256sum --check SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS
 mkdir -p webkvm-<版本> && tar xzf webkvm-<版本>-linux_amd64.tar.gz -C webkvm-<版本>
 cd webkvm-<版本>
 sudo WEBKVM_BINARY=backend/webkvm bash packaging/standalone/install.sh --yes

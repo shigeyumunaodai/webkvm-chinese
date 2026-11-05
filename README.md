@@ -91,7 +91,7 @@ Tagged releases (`zh-v*`) publish a ready-to-install tarball, the raw binaries a
 
 ```bash
 # Download the tarball + SHA256SUMS from the release page, then:
-sha256sum --check SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS
 mkdir -p webkvm-<version> && tar xzf webkvm-<version>-linux_amd64.tar.gz -C webkvm-<version>
 cd webkvm-<version>
 sudo WEBKVM_BINARY=backend/webkvm bash packaging/standalone/install.sh --yes
