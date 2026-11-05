@@ -10,7 +10,7 @@
     rows = [],
     rowKey = 'id',
     rowClass = '',
-    emptyMessage = 'No items',
+    emptyMessage = '',
     emptyIcon = 'search',
     loading = false,
     onRowClick = null,
@@ -196,7 +196,7 @@
     {#if loading}
       <TableSkeleton {columns} rows={Math.min(pageSize || 5, 8)} selectable={checkboxCol} />
     {:else if pagedRows.length === 0}
-      <EmptyState compact icon={emptyIcon} title={emptyMessage} />
+      <EmptyState compact icon={emptyIcon} title={emptyMessage || t('common.noResults')} />
     {:else}
       {#each pagedRows as row, _i (row[rowKey])}
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -210,7 +210,7 @@
           onclick={() => onRowClick?.(row)}
           role={onRowClick ? 'button' : undefined}
           tabindex={onRowClick ? 0 : undefined}
-          aria-label={onRowClick ? `Open ${row[rowKey]}` : undefined}
+          aria-label={onRowClick ? t('common.openRow', { row: row[rowKey] }) : undefined}
           onkeydown={(e) => {
             if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
               e.preventDefault();
@@ -230,7 +230,7 @@
                 checked={selectedKeys.has(row[rowKey])}
                 onchange={(e) => toggleRow(row, e.currentTarget.checked)}
                 class="h-4 w-4 rounded border-border bg-background text-accent focus:ring-2 focus:ring-accent/40"
-                aria-label="Select {row[rowKey]}"
+                aria-label={t('common.selectRow', { row: row[rowKey] })}
               />
             </div>
           {/if}

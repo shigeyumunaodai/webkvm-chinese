@@ -1857,7 +1857,11 @@
   <div class="space-y-3">
     <div>
       <label class="text-sm font-medium block mb-1" for="add-tgt-name">{t('backup.name')}</label>
-      <Input id="add-tgt-name" bind:value={newTargetName} placeholder="e.g. nightly-nfs" />
+      <Input
+        id="add-tgt-name"
+        bind:value={newTargetName}
+        placeholder={t('backup.targetNamePlaceholder')}
+      />
     </div>
     <div>
       <label class="text-sm font-medium block mb-1" for="add-tgt-type">{t('backup.type')}</label>

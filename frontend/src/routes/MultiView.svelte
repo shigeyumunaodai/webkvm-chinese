@@ -534,10 +534,10 @@
             size="xs"
             variant="outline"
             onclick={() => sendCtrlAltDel(focusedVm)}
-            title="Ctrl+Alt+Del"
+            title={t('multiview.ctrlAltDelTitle')}
           >
             <Icon name="keyboard" size={13} class="mr-1 text-warning" />
-            <span class="hidden sm:inline">Ctrl+Alt+Del</span>
+            <span class="hidden sm:inline">{t('multiview.ctrlAltDelTitle')}</span>
           </Button>
         {/if}
         <Button
@@ -710,28 +710,28 @@
               class="px-1.5 py-0.5 rounded {columns === 1
                 ? 'bg-accent text-accent-foreground font-bold'
                 : 'text-muted-foreground hover:text-foreground'}"
-              title="1 Col">1</button
+              title={t('multiview.columnsTitle1')}>1</button
             >
             <button
               onclick={() => setColumns(2)}
               class="px-1.5 py-0.5 rounded {columns === 2
                 ? 'bg-accent text-accent-foreground font-bold'
                 : 'text-muted-foreground hover:text-foreground'}"
-              title="2 Cols (Defecto - 2 pantallas)">2</button
+              title={t('multiview.columnsTitle2')}>2</button
             >
             <button
               onclick={() => setColumns(3)}
               class="px-1.5 py-0.5 rounded {columns === 3
                 ? 'bg-accent text-accent-foreground font-bold'
                 : 'text-muted-foreground hover:text-foreground'}"
-              title="3 Cols">3</button
+              title={t('multiview.columnsTitle3')}>3</button
             >
             <button
               onclick={() => setColumns(4)}
               class="px-1.5 py-0.5 rounded {columns === 4
                 ? 'bg-accent text-accent-foreground font-bold'
                 : 'text-muted-foreground hover:text-foreground'}"
-              title="4 Cols">4</button
+              title={t('multiview.columnsTitle4')}>4</button
             >
           </div>
 
@@ -937,7 +937,7 @@
           <div class="flex items-center flex-wrap gap-3">
             <!-- Columns -->
             <div class="inline-flex items-center gap-1">
-              <span class="text-muted-foreground hidden sm:inline">Columnas:</span>
+              <span class="text-muted-foreground hidden sm:inline">{t('multiview.columns')}:</span>
               <div class="inline-flex rounded-xl bg-background border border-border p-1 text-xs">
                 <button
                   onclick={() => setColumns(1)}
@@ -949,7 +949,8 @@
                   onclick={() => setColumns(2)}
                   class="px-2.5 py-0.5 rounded-lg {columns === 2
                     ? 'bg-accent text-accent-foreground font-bold'
-                    : 'text-muted-foreground hover:text-foreground'}">2 (Defecto)</button
+                    : 'text-muted-foreground hover:text-foreground'}"
+                  >{t('multiview.columnsDefaultOption')}</button
                 >
                 <button
                   onclick={() => setColumns(3)}

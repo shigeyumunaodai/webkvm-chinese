@@ -786,15 +786,15 @@
   // host-detected flag list (hundreds of names) is reachable via search
   // in the same picker.
   const COMMON_CPU_FLAGS = [
-    { value: 'aes', label: 'aes', desc: 'AES-NI Hardware Encryption' },
-    { value: 'avx2', label: 'avx2', desc: 'Advanced Vector Extensions 2' },
-    { value: 'topoext', label: 'topoext', desc: 'AMD SMT / Core Topology' },
-    { value: 'pdpe1gb', label: 'pdpe1gb', desc: '1 GB Hugepages Support' },
-    { value: 'pcid', label: 'pcid', desc: 'Process-Context Identifiers (faster TLB)' },
+    { value: 'aes', label: 'aes', desc: t('vmDetail.cpuFlagDescAes') },
+    { value: 'avx2', label: 'avx2', desc: t('vmDetail.cpuFlagDescAvx2') },
+    { value: 'topoext', label: 'topoext', desc: t('vmDetail.cpuFlagDescTopoext') },
+    { value: 'pdpe1gb', label: 'pdpe1gb', desc: t('vmDetail.cpuFlagDescPdpe1gb') },
+    { value: 'pcid', label: 'pcid', desc: t('vmDetail.cpuFlagDescPcid') },
     {
       value: 'hypervisor',
       label: 'hypervisor',
-      desc: 'Hide Hypervisor Feature Bit (default: off)',
+      desc: t('vmDetail.cpuFlagDescHypervisor'),
     },
   ];
   // 'other' reveals the manual text input below, for a model not in
@@ -818,10 +818,10 @@
 
   const networkModels = $derived([
     { value: 'virtio', label: t('vmCreate.networkVirtioRec') },
-    { value: 'e1000e', label: 'e1000e (Intel, ideal for Windows)' },
-    { value: 'e1000', label: 'e1000 (legacy Intel)' },
-    { value: 'rtl8139', label: 'rtl8139 (Realtek, very compatible)' },
-    { value: 'pcnet', label: 'pcnet (AMD, legacy)' },
+    { value: 'e1000e', label: t('vmDetail.nicE1000e') },
+    { value: 'e1000', label: t('vmDetail.nicE1000') },
+    { value: 'rtl8139', label: t('vmDetail.nicRtl8139') },
+    { value: 'pcnet', label: t('vmDetail.nicPcnet') },
   ]);
 
   const windowsVersions = [
@@ -922,7 +922,7 @@
       previewContent = res.user_data;
     } catch (err) {
       toast.error(err.message);
-      previewContent = '# Error generating preview: ' + err.message;
+      previewContent = t('vmCreate.previewError', { error: err.message });
     } finally {
       previewLoading = false;
     }
@@ -1073,7 +1073,7 @@
           return;
         }
         if (!ciPassword) {
-          error = 'Password is required for cloud-init provisioning';
+          error = t('vmCreate.ciPasswordRequired');
           loading = false;
           return;
         }
@@ -1206,13 +1206,16 @@
         };
       }
       const creationTaskId = 'create:' + Date.now();
-      const entityLabel = isContainer ? 'Contenedor' : 'VM';
+      const entityLabel = isContainer ? t('vmCreate.entityContainer') : t('vmCreate.entityVM');
       upsertTask({
         id: creationTaskId,
         kind: 'general',
-        title: `Creando ${entityLabel}: ${name || 'nueva instancia'}`,
+        title: t('vmCreate.taskCreatingTitle', {
+          kind: entityLabel,
+          name: name || t('vmCreate.newInstance'),
+        }),
         pct: 20,
-        message: 'Aprovisionando recursos y almacenamiento...',
+        message: t('vmCreate.taskProvisioning'),
         status: 'running',
       });
 
@@ -1221,10 +1224,10 @@
         result = await api.createVM(payload);
         updateTask(creationTaskId, {
           pct: 70,
-          message: 'Configurando redes y metadatos...',
+          message: t('vmCreate.taskConfiguring'),
         });
       } catch (err) {
-        finishTask(creationTaskId, 'error', err.message || 'Error al crear', 20);
+        finishTask(creationTaskId, 'error', err.message || t('vmCreate.createFailed'), 20);
         throw err;
       }
       if (result?.warning) {
@@ -1292,10 +1295,15 @@
         // cloud-init preview uses), so never show an empty "User" field.
         createdUsername = ciUser || (isContainer ? 'root' : '');
         createdPassword = result.password;
-        finishTask(creationTaskId, 'success', 'Instancia creada con credenciales generadas', 100);
+        finishTask(creationTaskId, 'success', t('vmCreate.createdWithCredentials'), 100);
         showPasswordModal = true;
       } else {
-        finishTask(creationTaskId, 'success', `${entityLabel} creada correctamente`, 100);
+        finishTask(
+          creationTaskId,
+          'success',
+          t('vmCreate.createdSuccess', { kind: entityLabel }),
+          100
+        );
         toast.success(t('vmCreate.vmCreated', { name }));
         navigate('/vms');
       }
@@ -1465,7 +1473,7 @@
                       id="custom-incus-ref"
                       bind:value={customImage}
                       type="text"
-                      placeholder="e.g. images:gentoo, rockylinux:9/cloud, local:my-custom-image"
+                      placeholder={t('vmCreate.imageRefPlaceholder')}
                       class="w-full font-mono text-xs"
                       aria-invalid={touched.image && imageError ? 'true' : undefined}
                       onblur={() => (touched.image = true)}
@@ -1936,8 +1944,8 @@
                         disabled={!tpmEnabled}
                         class="input !py-1 !text-xs w-28 {!tpmEnabled ? 'opacity-50' : ''}"
                       >
-                        <option value="2.0">v2.0 (Win11)</option>
-                        <option value="1.2">v1.2 (Legacy)</option>
+                        <option value="2.0">{t('vmDetail.tpmVersion20')}</option>
+                        <option value="1.2">{t('vmDetail.tpmVersion12')}</option>
                       </select>
                     </div>
                   </SettingRow>
@@ -2069,14 +2077,14 @@
                 </SettingRow>
 
                 <SettingRow
-                  label="Consola Gráfica"
-                  helper="Selecciona los servidores de consola gráfica a habilitar (VNC, SPICE, ambos o ninguno)"
+                  label={t('vmCreate.graphicsLabel')}
+                  helper={t('vmCreate.graphicsHelper')}
                 >
                   <select bind:value={graphicsType} class="input max-w-xs">
-                    <option value="both">Ambas activas (noVNC + SPICE)</option>
-                    <option value="vnc">Solo noVNC (RFB estándar)</option>
-                    <option value="spice">Solo SPICE (Alto rendimiento / Web SPICE)</option>
-                    <option value="none">Desactivadas (Sin consola gráfica / Headless)</option>
+                    <option value="both">{t('vmCreate.graphicsBoth')}</option>
+                    <option value="vnc">{t('vmCreate.graphicsVncOnly')}</option>
+                    <option value="spice">{t('vmCreate.graphicsSpiceOnly')}</option>
+                    <option value="none">{t('vmCreate.graphicsNone')}</option>
                   </select>
                 </SettingRow>
               </div>

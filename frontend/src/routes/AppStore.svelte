@@ -334,9 +334,12 @@
         upsertTask({
           id: 'async:' + deployJobId,
           kind: 'general',
-          title: `Desplegando App: ${deployModalApp.name} (${deployName})`,
+          title: t('appstore.taskDeployingApp', {
+            name: deployModalApp.name,
+            instance: deployName,
+          }),
           pct: 10,
-          message: 'Descargando y preparando plantilla...',
+          message: t('appstore.taskDownloadingTemplate'),
           status: 'running',
         });
       }
@@ -355,8 +358,11 @@
       deploying = false;
       toast.success(
         isContainer
-          ? `${deployModalApp.name} desplegado con éxito`
-          : `${deployModalApp.name} en cola de despliegue (trabajo ${deployJobId || 'en curso'})`
+          ? t('appstore.appDeployedToast', { name: deployModalApp.name })
+          : t('appstore.appQueuedToast', {
+              name: deployModalApp.name,
+              job: deployJobId || t('appstore.jobInProgress'),
+            })
       );
     } catch (err) {
       toast.error(err.message || t('appstore.deployError'));
@@ -569,7 +575,8 @@ EOF\n`;
           <span
             class="text-xs px-2.5 py-0.5 rounded-full bg-success/10 text-success font-medium border border-success/20 flex items-center gap-1"
           >
-            <Icon name="box" size={12} /> Incus LXC 1-Clic
+            <Icon name="box" size={12} />
+            {t('appstore.oneClickBadge')}
           </span>
         </div>
         <p class="text-xs text-muted-foreground max-w-2xl">
@@ -608,7 +615,7 @@ EOF\n`;
             : 'text-muted-foreground hover:text-foreground'}"
         >
           <Icon name="package" size={13} class={sourceView === 'curated' ? 'text-accent' : ''} />
-          <span>Oficiales WebKVM</span>
+          <span>{t('appstore.sourceCurated')}</span>
         </button>
         <button
           onclick={() => (sourceView = 'community')}
@@ -618,7 +625,7 @@ EOF\n`;
             : 'text-muted-foreground hover:text-foreground'}"
         >
           <Icon name="code" size={13} class={sourceView === 'community' ? 'text-accent' : ''} />
-          <span>Comunitarias (Helper Scripts)</span>
+          <span>{t('appstore.sourceCommunity')}</span>
           <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-accent/15 text-accent font-bold"
             >630+</span
           >
@@ -823,7 +830,7 @@ EOF\n`;
                 <button
                   onclick={() => openScriptStudio(app)}
                   class="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  title="Editar script / configuración"
+                  title={t('appstore.editScriptTitle')}
                 >
                   <Icon name="pencil" size={13} />
                 </button>
@@ -831,8 +838,8 @@ EOF\n`;
                   <button
                     onclick={() => deleteApp(app)}
                     class="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    aria-label="Eliminar app"
-                    title="Eliminar app"
+                    aria-label={t('appstore.deleteAppAria')}
+                    title={t('appstore.deleteAppAria')}
                   >
                     <Icon name="trash" size={13} />
                   </button>
@@ -845,7 +852,7 @@ EOF\n`;
                   target="_blank"
                   rel="noopener noreferrer"
                   class="p-1.5 rounded-lg text-muted-foreground hover:text-accent hover:bg-muted transition-colors inline-flex items-center"
-                  title="Documentación oficial"
+                  title={t('appstore.officialDocs')}
                 >
                   <Icon name="externalLink" size={13} />
                 </a>
@@ -857,7 +864,7 @@ EOF\n`;
                 onclick={() => openDeployModal(app)}
                 class="ml-auto font-semibold flex items-center gap-1 shadow-sm"
               >
-                <span>Desplegar 1-Clic</span>
+                <span>{t('appstore.deployOneClick')}</span>
                 <Icon name="arrowRight" size={12} />
               </Button>
             </div>
@@ -885,8 +892,10 @@ EOF\n`;
             <Icon name="package" size={20} />
           </div>
           <div>
-            <Dialog.Title>Desplegar {deployModalApp.name}</Dialog.Title>
-            <Dialog.Description>Configuración rápida en 1-clic</Dialog.Description>
+            <Dialog.Title
+              >{t('appstore.deployAppTitle', { name: deployModalApp.name })}</Dialog.Title
+            >
+            <Dialog.Description>{t('appstore.deployQuickConfig')}</Dialog.Description>
           </div>
         </div>
       </Dialog.Header>
@@ -901,11 +910,10 @@ EOF\n`;
           </div>
           <div>
             <h4 class="text-base font-bold text-foreground">
-              {deploySuccess.name} está en cola de despliegue
+              {t('appstore.queuedTitle', { name: deploySuccess.name })}
             </h4>
             <p class="text-xs text-muted-foreground mt-1 max-w-sm">
-              La instalación se ejecuta en segundo plano. La instancia aparecerá en tu lista cuando
-              termine; puedes seguirla en Detalles → Tareas.
+              {t('appstore.queuedDesc')}
             </p>
           </div>
 
@@ -914,28 +922,30 @@ EOF\n`;
             class="w-full rounded-xl bg-muted/40 border border-border p-4 text-left font-mono text-xs space-y-2"
           >
             <div class="flex items-center justify-between">
-              <span class="text-muted-foreground">Instancia:</span>
+              <span class="text-muted-foreground">{t('appstore.instanceLabel')}</span>
               <span class="text-foreground font-bold">{deploySuccess.name}</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-muted-foreground">Trabajo:</span>
+              <span class="text-muted-foreground">{t('appstore.jobLabel')}</span>
               <span class="text-foreground font-bold">{deploySuccess.job_id || '—'}</span>
             </div>
             <div class="flex items-center justify-between gap-2 min-w-0">
-              <span class="text-muted-foreground shrink-0">Puerto Servicio:</span>
+              <span class="text-muted-foreground shrink-0">{t('appstore.servicePortLabel')}</span>
               <span class="text-accent font-bold truncate"
                 >:{deploySuccess.port}{deploySuccess.web_path}</span
               >
             </div>
             {#if deploySuccess.user}
               <div class="flex items-center justify-between gap-2 min-w-0">
-                <span class="text-muted-foreground shrink-0">Usuario Inicial:</span>
+                <span class="text-muted-foreground shrink-0">{t('appstore.initialUserLabel')}</span>
                 <span class="text-foreground font-bold truncate">{deploySuccess.user}</span>
               </div>
             {/if}
             {#if deploySuccess.password}
               <div class="flex items-center justify-between gap-2 min-w-0">
-                <span class="text-muted-foreground shrink-0">Password Inicial:</span>
+                <span class="text-muted-foreground shrink-0"
+                  >{t('appstore.initialPasswordLabel')}</span
+                >
                 <span class="text-warning font-bold break-all">{deploySuccess.password}</span>
               </div>
             {/if}
@@ -953,7 +963,7 @@ EOF\n`;
                 }}
               >
                 <Icon name="terminal" size={14} class="mr-1.5" />
-                <span>Ver Instancia</span>
+                <span>{t('appstore.viewInstance')}</span>
               </Button>
             {/if}
             <Button
@@ -965,7 +975,7 @@ EOF\n`;
               }}
             >
               <Icon name="check" size={14} class="mr-1.5" />
-              <span>Finalizar</span>
+              <span>{t('appstore.finish')}</span>
             </Button>
           </div>
         </div>
@@ -975,7 +985,7 @@ EOF\n`;
           <!-- Target Environment (LXC vs VM) -->
           <div>
             <span class="text-xs font-semibold text-foreground block mb-1.5"
-              >Entorno de Ejecución</span
+              >{t('appstore.targetEnvironment')}</span
             >
             <div class="grid grid-cols-2 gap-2 text-xs">
               <button
@@ -989,10 +999,12 @@ EOF\n`;
                 <div class="flex items-center gap-1.5 text-success font-semibold mb-0.5">
                   <Icon name="box" size={14} />
                   <span>Incus LXC</span>
-                  <span class="text-[10px] px-1 py-0.2 rounded bg-success/20">Recomendado</span>
+                  <span class="text-[10px] px-1 py-0.2 rounded bg-success/20"
+                    >{t('appstore.recommended')}</span
+                  >
                 </div>
                 <span class="text-[11px] text-muted-foreground font-normal"
-                  >Arranque en ~3s, bajo consumo de RAM.</span
+                  >{t('appstore.containerTypeDesc')}</span
                 >
               </button>
               <button
@@ -1005,10 +1017,10 @@ EOF\n`;
               >
                 <div class="flex items-center gap-1.5 text-accent font-semibold mb-0.5">
                   <Icon name="cpu" size={14} />
-                  <span>KVM Virtual Machine</span>
+                  <span>{t('vmCreate.typeKvm')}</span>
                 </div>
                 <span class="text-[11px] text-muted-foreground font-normal"
-                  >Aislamiento de kernel completo.</span
+                  >{t('appstore.vmTypeDesc')}</span
                 >
               </button>
             </div>
@@ -1020,19 +1032,20 @@ EOF\n`;
               <label
                 for="deploy-instance-name"
                 class="text-xs font-semibold text-foreground block mb-1"
-                >Nombre de la Instancia *</label
+                >{t('appstore.instanceNameLabel')}</label
               >
               <Input
                 id="deploy-instance-name"
                 bind:value={deployName}
-                placeholder="mi-app"
+                placeholder={t('appstore.instanceNamePlaceholder')}
                 class="w-full"
               />
             </div>
             <div>
               <label
                 for="deploy-network-select"
-                class="text-xs font-semibold text-foreground block mb-1">Red / Bridge *</label
+                class="text-xs font-semibold text-foreground block mb-1"
+                >{t('appstore.networkBridgeLabel')}</label
               >
               <select
                 id="deploy-network-select"
@@ -1040,7 +1053,7 @@ EOF\n`;
                 class="input w-full text-xs"
               >
                 {#if networks.length === 0}
-                  <option value="default">default (automático)</option>
+                  <option value="default">{t('appstore.defaultAutoOption')}</option>
                 {:else}
                   {#each networks as n (n.name)}
                     <option value={n.name}>{networkLabel(n)}</option>
@@ -1107,23 +1120,23 @@ EOF\n`;
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <Icon name="lock" size={13} class="text-accent" />
-                <span>Credenciales de Acceso (Usuario & Root)</span>
+                <span>{t('appstore.credentialsTitle')}</span>
               </span>
               <button
                 type="button"
                 onclick={generateNewPassword}
                 class="text-[11px] text-accent hover:underline flex items-center gap-1"
-                title="Generar nueva contraseña segura"
+                title={t('appstore.generateSecurePassword')}
               >
                 <Icon name="refresh" size={11} />
-                <span>Generar nueva</span>
+                <span>{t('appstore.generateNew')}</span>
               </button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label for="deploy-user-input" class="text-[11px] text-muted-foreground block mb-1">
-                  Usuario del Sistema
+                  {t('appstore.systemUserLabel')}
                 </label>
                 <Input
                   id="deploy-user-input"
@@ -1134,7 +1147,7 @@ EOF\n`;
               </div>
               <div>
                 <label for="deploy-pass-input" class="text-[11px] text-muted-foreground block mb-1">
-                  Contraseña (Root / Sudo) *
+                  {t('appstore.passwordRootSudoLabel')}
                 </label>
                 <div class="relative">
                   <input
@@ -1142,13 +1155,13 @@ EOF\n`;
                     type={showDeployPassword ? 'text' : 'password'}
                     bind:value={deployPassword}
                     class="w-full pl-2.5 pr-8 py-1.5 rounded-xl bg-background border border-border text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder={t('appstore.passwordMinPlaceholder')}
                   />
                   <button
                     type="button"
                     onclick={() => (showDeployPassword = !showDeployPassword)}
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    title={showDeployPassword ? 'Ocultar' : 'Mostrar'}
+                    title={showDeployPassword ? t('login.hidePassword') : t('login.showPassword')}
                   >
                     <Icon name={showDeployPassword ? 'eyeOff' : 'eye'} size={14} />
                   </button>
@@ -1160,7 +1173,7 @@ EOF\n`;
               <summary
                 class="cursor-pointer text-muted-foreground hover:text-foreground select-none font-medium text-[11px]"
               >
-                + Clave SSH Pública (Opcional)
+                {t('appstore.sshKeyOptional')}
               </summary>
               <div class="mt-2">
                 <textarea
@@ -1178,7 +1191,7 @@ EOF\n`;
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label for="deploy-vcpus" class="text-xs text-muted-foreground block mb-1"
-                >vCPU Cores</label
+                >{t('appstore.vcpuCoresLabel')}</label
               >
               <Input
                 id="deploy-vcpus"
@@ -1204,7 +1217,7 @@ EOF\n`;
             </div>
             <div>
               <label for="deploy-disk" class="text-xs text-muted-foreground block mb-1"
-                >Disco (GB)</label
+                >{t('appstore.diskGbLabel')}</label
               >
               <Input
                 id="deploy-disk"
@@ -1327,7 +1340,7 @@ EOF\n`;
           {#if deploying}
             <div class="pt-2 space-y-2">
               <div class="flex items-center justify-between text-xs font-semibold text-accent">
-                <span>Desplegando contenedor y ejecutando aprovisionamiento...</span>
+                <span>{t('appstore.deployingProvisioning')}</span>
                 <span>{deployProgress}%</span>
               </div>
               <div class="w-full h-2 rounded-full bg-muted overflow-hidden">
@@ -1343,7 +1356,7 @@ EOF\n`;
         <!-- Footer Buttons -->
         <Dialog.Footer>
           <Button variant="outline" size="sm" onclick={closeDeployModal} disabled={deploying}>
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -1354,10 +1367,10 @@ EOF\n`;
           >
             {#if deploying}
               <Spinner size="sm" class="mr-1.5" />
-              <span>Desplegando...</span>
+              <span>{t('appstore.deployingButton')}</span>
             {:else}
               <Icon name="zap" size={14} class="mr-1.5 text-warning" />
-              <span>Lanzar en 1-Clic</span>
+              <span>{t('appstore.deployNow')}</span>
             {/if}
           </Button>
         </Dialog.Footer>
@@ -1379,10 +1392,10 @@ EOF\n`;
           <div>
             <h3 class="text-base font-bold text-foreground">
               {editingApp
-                ? `Editar Helper Script: ${editingApp.name}`
-                : 'Script Studio (Crear Helper Script Propio)'}
+                ? t('appstore.scriptStudioEditTitle', { name: editingApp.name })
+                : t('appstore.scriptStudioCreateTitle')}
             </h3>
-            <p class="text-xs text-muted-foreground">Exclusivo para administradores de WebKVM</p>
+            <p class="text-xs text-muted-foreground">{t('appstore.adminOnly')}</p>
           </div>
         </div>
         <button
@@ -1398,24 +1411,24 @@ EOF\n`;
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label for="script-id-input" class="text-xs font-semibold text-foreground block mb-1"
-              >ID Único *</label
+              >{t('appstore.uniqueIdLabel')}</label
             >
             <Input
               id="script-id-input"
               bind:value={scriptForm.id}
               disabled={!!editingApp}
-              placeholder="mi-app"
+              placeholder={t('appstore.instanceNamePlaceholder')}
               class="w-full"
             />
           </div>
           <div>
             <label for="script-name-input" class="text-xs font-semibold text-foreground block mb-1"
-              >Nombre de la Aplicación *</label
+              >{t('appstore.appNameLabel')}</label
             >
             <Input
               id="script-name-input"
               bind:value={scriptForm.name}
-              placeholder="Mi Aplicación"
+              placeholder={t('appstore.appNamePlaceholder')}
               class="w-full"
             />
           </div>
@@ -1423,12 +1436,12 @@ EOF\n`;
 
         <div>
           <label for="script-desc-input" class="text-xs font-semibold text-foreground block mb-1"
-            >Descripción</label
+            >{t('appstore.applianceDescription')}</label
           >
           <Input
             id="script-desc-input"
             bind:value={scriptForm.description}
-            placeholder="Descripción de la app..."
+            placeholder={t('appstore.descriptionPlaceholder')}
             class="w-full"
           />
         </div>
@@ -1436,38 +1449,38 @@ EOF\n`;
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label for="script-cat-select" class="text-xs font-semibold text-foreground block mb-1"
-              >Categoría</label
+              >{t('appstore.applianceCategory')}</label
             >
             <select
               id="script-cat-select"
               bind:value={scriptForm.category}
               class="input w-full text-xs"
             >
-              <option value="devops">DevOps & Docker</option>
-              <option value="networking">Redes & DNS</option>
-              <option value="monitoring">Monitorización</option>
-              <option value="security">Seguridad & VPN</option>
-              <option value="productivity">Productividad</option>
-              <option value="automation">Automatización</option>
-              <option value="media">Media & Home</option>
+              <option value="devops">{t('appstore.catDevops')}</option>
+              <option value="networking">{t('appstore.catNetworking')}</option>
+              <option value="monitoring">{t('appstore.catMonitoring')}</option>
+              <option value="security">{t('appstore.catSecurity')}</option>
+              <option value="productivity">{t('appstore.catProductivity')}</option>
+              <option value="automation">{t('appstore.catAutomation')}</option>
+              <option value="media">{t('appstore.catMedia')}</option>
             </select>
           </div>
           <div>
             <label for="script-type-select" class="text-xs font-semibold text-foreground block mb-1"
-              >Tipo Predeterminado</label
+              >{t('appstore.defaultTypeLabel')}</label
             >
             <select
               id="script-type-select"
               bind:value={scriptForm.default_type}
               class="input w-full text-xs"
             >
-              <option value="container">Contenedor LXC (Incus)</option>
-              <option value="vm">Máquina KVM</option>
+              <option value="container">{t('appstore.typeLxcContainer')}</option>
+              <option value="vm">{t('appstore.typeKvmMachine')}</option>
             </select>
           </div>
           <div>
             <label for="script-base-select" class="text-xs font-semibold text-foreground block mb-1"
-              >Imagen Base</label
+              >{t('appstore.baseImageLabel')}</label
             >
             <select
               id="script-base-select"
@@ -1485,7 +1498,7 @@ EOF\n`;
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label for="script-port-input" class="text-xs font-semibold text-foreground block mb-1"
-              >Puerto de Acceso</label
+              >{t('appstore.accessPortLabel')}</label
             >
             <Input
               id="script-port-input"
@@ -1498,7 +1511,8 @@ EOF\n`;
           <div>
             <label
               for="script-webpath-input"
-              class="text-xs font-semibold text-foreground block mb-1">Ruta Web</label
+              class="text-xs font-semibold text-foreground block mb-1"
+              >{t('appstore.webPathLabel')}</label
             >
             <Input
               id="script-webpath-input"
@@ -1513,16 +1527,16 @@ EOF\n`;
         <div class="pt-2">
           <div class="flex items-center justify-between mb-1.5">
             <label for="script-textarea" class="text-xs font-semibold text-foreground"
-              >Script de Aprovisionamiento Bash (Root)</label
+              >{t('appstore.provisionScriptLabel')}</label
             >
             <span class="text-[10px] text-muted-foreground font-mono"
-              >Ejecutado al primer arranque</span
+              >{t('appstore.provisionScriptHint')}</span
             >
           </div>
 
           <!-- Snippet Insertion Pills -->
           <div class="flex flex-wrap items-center gap-1.5 mb-2">
-            <span class="text-[11px] text-muted-foreground">Insertar:</span>
+            <span class="text-[11px] text-muted-foreground">{t('appstore.insertLabel')}</span>
             <button
               type="button"
               onclick={() => insertScriptSnippet('docker')}
@@ -1549,14 +1563,14 @@ EOF\n`;
               onclick={() => insertScriptSnippet('systemd')}
               class="px-2 py-0.5 rounded-lg bg-muted hover:bg-accent/20 hover:text-accent text-[11px] font-mono border border-border"
             >
-              + Systemd Service
+              {t('appstore.snippetSystemd')}
             </button>
             <button
               type="button"
               onclick={() => insertScriptSnippet('webkvm-creds')}
               class="px-2 py-0.5 rounded-lg bg-muted hover:bg-accent/20 hover:text-accent text-[11px] font-mono border border-border"
             >
-              + Info WebKVM
+              {t('appstore.snippetWebkvmInfo')}
             </button>
           </div>
 
@@ -1573,7 +1587,7 @@ EOF\n`;
       <!-- Drawer Footer -->
       <div class="pt-4 border-t border-border flex items-center justify-end gap-2">
         <Button variant="outline" size="sm" onclick={() => (showScriptStudio = false)}>
-          Cancelar
+          {t('common.cancel')}
         </Button>
         <Button
           variant="primary"
@@ -1584,10 +1598,10 @@ EOF\n`;
         >
           {#if savingScript}
             <Spinner size="sm" class="mr-1.5" />
-            <span>Guardando...</span>
+            <span>{t('common.saving')}</span>
           {:else}
             <Icon name="save" size={14} class="mr-1.5" />
-            <span>Guardar en Catálogo</span>
+            <span>{t('appstore.saveToCatalog')}</span>
           {/if}
         </Button>
       </div>

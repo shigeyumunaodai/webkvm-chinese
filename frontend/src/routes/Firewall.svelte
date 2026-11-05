@@ -788,8 +788,8 @@
                     class="h-8 rounded-lg border border-border bg-background px-1 text-sm"
                     bind:value={r.action}
                   >
-                    <option value="allow">Allow</option>
-                    <option value="drop">Drop</option>
+                    <option value="allow">{t('vmDetail.fwAllow')}</option>
+                    <option value="drop">{t('vmDetail.fwDrop')}</option>
                   </select>
                 </td>
                 <td class="px-4 py-1.5">

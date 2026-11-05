@@ -388,7 +388,9 @@
                 {guestExecResult.exit_code}
               </span>
               {#if !guestExecResult.exited}
-                <span class="text-[10px] text-amber-400 font-semibold">(Timeout)</span>
+                <span class="text-[10px] text-amber-400 font-semibold"
+                  >{t('vmDetail.guestExecTimeout')}</span
+                >
               {/if}
             </div>
             <Button
@@ -410,7 +412,9 @@
               class="text-destructive whitespace-pre-wrap overflow-x-auto max-h-40 leading-relaxed">{guestExecResult.stderr}</pre>
           {/if}
           {#if !guestExecResult.stdout && !guestExecResult.stderr}
-            <p class="text-muted-foreground italic text-[11px]">(No output returned)</p>
+            <p class="text-muted-foreground italic text-[11px]">
+              {t('vmDetail.guestExecNoOutput')}
+            </p>
           {/if}
         </div>
       {/if}

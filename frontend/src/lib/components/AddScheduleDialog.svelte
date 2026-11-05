@@ -63,7 +63,7 @@
       <Input
         id="add-sched-name"
         bind:value={name}
-        placeholder="e.g. nightly"
+        placeholder={t('backup.scheduleNamePlaceholder')}
         class="w-full min-w-0"
       />
     </div>

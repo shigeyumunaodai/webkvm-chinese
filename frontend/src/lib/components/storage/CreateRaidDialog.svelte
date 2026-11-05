@@ -92,9 +92,9 @@
     upsertTask({
       id: taskId,
       kind: 'storage',
-      title: `Creando arreglo RAID ${createRaidLevel}: ${raidDevName}`,
+      title: t('storage.raidTaskCreating', { level: createRaidLevel, device: raidDevName }),
       pct: 30,
-      message: 'Construyendo arreglo de discos en el host...',
+      message: t('storage.raidTaskBuilding'),
       status: 'running',
     });
     try {
@@ -117,13 +117,13 @@
         }
       }
       const res = await api.createHostRaid(raidPayload);
-      finishTask(taskId, 'success', `Arreglo RAID ${res.device} creado`, 100);
+      finishTask(taskId, 'success', t('storage.raidTaskCreated', { device: res.device }), 100);
       open = false;
       onCreated(res);
       alert(t('storage.raidCreatedSuccess', { device: res.device }));
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error al crear RAID', 30);
-      onError('Create RAID Error', e);
+      finishTask(taskId, 'error', e.message || t('storage.raidCreateError'), 30);
+      onError(t('storage.raidErrorTitle'), e);
     } finally {
       creatingRaid = false;
     }
@@ -191,7 +191,7 @@
               />
               <span class="font-mono text-xs font-medium text-foreground">{disk.path}</span>
               <span class="text-[11px] text-muted-foreground"
-                >({disk.size_human} · {disk.model || 'Disk'})</span
+                >({disk.size_human} · {disk.model || t('storage.genericDiskFallback')})</span
               >
             </label>
           {:else}
@@ -237,9 +237,9 @@
                 >{t('storage.filesystemTitle')}</label
               >
               <select id="raid-fs" bind:value={createRaidFs} class="input w-full text-xs font-mono">
-                <option value="ext4">ext4 (Linux estándar)</option>
-                <option value="xfs">xfs (Alto rendimiento)</option>
-                <option value="btrfs">btrfs (CoW con snapshots)</option>
+                <option value="ext4">{t('storage.fsExt4Short')}</option>
+                <option value="xfs">{t('storage.fsXfsShort')}</option>
+                <option value="btrfs">{t('storage.fsBtrfsCow')}</option>
               </select>
             </div>
             <div>
@@ -297,10 +297,10 @@
                       bind:value={createRaidSinglePurpose}
                       class="input w-full text-xs font-mono"
                     >
-                      <option value="disk">disk (Imágenes de VM / VDI)</option>
-                      <option value="iso">iso (Biblioteca de imágenes ISO)</option>
-                      <option value="backup">backup (Copias de seguridad)</option>
-                      <option value="container">container (Contenedores Incus)</option>
+                      <option value="disk">{t('storage.purposeKvmOption')}</option>
+                      <option value="iso">{t('storage.purposeIsoOption')}</option>
+                      <option value="backup">{t('storage.purposeBackupOption')}</option>
+                      <option value="container">{t('storage.purposeLxcOption')}</option>
                     </select>
                   </div>
                 {:else}

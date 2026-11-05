@@ -403,7 +403,7 @@
               {#if item.id === 'storage' && storageWarning}
                 <span
                   class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-destructive/15 text-destructive border border-destructive/30 shrink-0"
-                  title="Storage high: {storageUsedPct}%"
+                  title={t('nav.storageHigh', { pct: storageUsedPct })}
                 >
                   {storageUsedPct}%
                 </span>

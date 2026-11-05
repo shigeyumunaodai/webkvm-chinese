@@ -1615,7 +1615,11 @@
         >
           {t('account.tokenName')}
         </label>
-        <Input id="tok-name" bind:value={newTokenName} placeholder="e.g. ci-deploy, monitoring" />
+        <Input
+          id="tok-name"
+          bind:value={newTokenName}
+          placeholder={t('account.tokenNamePlaceholder')}
+        />
       </div>
       <div>
         <label

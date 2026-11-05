@@ -48,8 +48,7 @@
           description: '',
           category: 'custom',
           type: 'user-data',
-          content:
-            '#cloud-config\n# Tu configuración personalizada aquí\npackage_update: true\npackages:\n  - curl\n',
+          content: `#cloud-config\n# ${t('storage.snippetDefaultComment')}\npackage_update: true\npackages:\n  - curl\n`,
         };
       }
     }
@@ -117,7 +116,8 @@
           ? editingSnippet.is_preset
             ? t('storage.presetSnippetDetailTitle')
             : t('storage.editSnippet')
-          : snippetForm.name?.includes('(Personalizado)') || snippetForm.name?.includes('(Copia)')
+          : snippetForm.name?.includes(t('storage.snippetCloneSuffix').trim()) ||
+              snippetForm.name?.includes('(Copia)')
             ? t('storage.cloneRecipeTitle')
             : t('storage.newSnippet')}
       </Dialog.Title>

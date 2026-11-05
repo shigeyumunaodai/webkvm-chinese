@@ -75,9 +75,12 @@
     upsertTask({
       id: taskId,
       kind: 'storage',
-      title: `Creando ZPool: ${createZPoolName.trim()} (${createZPoolTopology})`,
+      title: t('storage.zpoolTaskCreating', {
+        name: createZPoolName.trim(),
+        topology: createZPoolTopology,
+      }),
       pct: 35,
-      message: 'Creando conjunto ZFS y configuración...',
+      message: t('storage.zpoolTaskBuilding'),
       status: 'running',
     });
     try {
@@ -90,12 +93,17 @@
         mount_point: createZPoolMountPoint.trim() || undefined,
         auto_unmount: createZPoolAutoUnmount,
       });
-      finishTask(taskId, 'success', `ZPool ${createZPoolName.trim()} creado con éxito`, 100);
+      finishTask(
+        taskId,
+        'success',
+        t('storage.zpoolTaskCreated', { name: createZPoolName.trim() }),
+        100
+      );
       showCreateZPool = false;
       onRefresh();
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error al crear ZPool', 35);
-      showStorageErr('Create ZFS Pool Error', e);
+      finishTask(taskId, 'error', e.message || t('storage.zpoolCreateError'), 35);
+      showStorageErr(t('storage.zpoolErrorTitle'), e);
     } finally {
       creatingZPool = false;
     }
@@ -113,7 +121,7 @@
           toast.success(t('storage.zpoolDestroyed'));
           onRefresh();
         } catch (e) {
-          toast.error(e.message || 'Error al destruir ZPool');
+          toast.error(e.message || t('storage.zpoolDestroyError'));
         }
       },
     });
@@ -140,7 +148,7 @@
       showCreateZVol = false;
       onRefresh();
     } catch (e) {
-      showStorageErr('Create ZVol Error', e);
+      showStorageErr(t('storage.zvolErrorTitle'), e);
     } finally {
       creatingZVol = false;
     }
@@ -151,12 +159,9 @@
     upsertTask({
       id: taskId,
       kind: 'storage',
-      title: `ZFS Scrub: ${poolName}`,
+      title: t('storage.scrubTaskTitle', { pool: poolName }),
       pct: 50,
-      message:
-        action === 'stop'
-          ? 'Deteniendo verificación...'
-          : 'Ejecutando verificación de integridad...',
+      message: action === 'stop' ? t('storage.scrubStoppingMsg') : t('storage.scrubRunningMsg'),
       status: 'running',
     });
     scrubbingPool[poolName] = true;
@@ -166,17 +171,19 @@
         taskId,
         'success',
         action === 'stop'
-          ? `Scrub cancelado para ${poolName}`
-          : `Scrub en progreso para ${poolName}`,
+          ? t('storage.scrubCancelledTask', { pool: poolName })
+          : t('storage.scrubInProgressTask', { pool: poolName }),
         100
       );
       toast.success(
-        action === 'stop' ? `Scrub cancelado para ${poolName}` : `Scrub iniciado para ${poolName}`
+        action === 'stop'
+          ? t('storage.scrubCancelledTask', { pool: poolName })
+          : t('storage.scrubStartedToast', { pool: poolName })
       );
       onRefresh();
     } catch (e) {
-      finishTask(taskId, 'error', e.message || 'Error en ZFS scrub', 50);
-      toast.error('Error en ZFS scrub: ' + e.message);
+      finishTask(taskId, 'error', e.message || t('storage.scrubError'), 50);
+      toast.error(t('storage.scrubErrorDetail', { error: e.message }));
     } finally {
       scrubbingPool[poolName] = false;
     }
@@ -271,7 +278,7 @@
                           disabled={scrubbingPool[pool.name]}
                           onclick={() => handleScrub(pool.name, 'start')}
                         >
-                          Scrub
+                          {t('storage.zfsScrubBtn')}
                         </Button>
                         <Button
                           variant="outline"
@@ -361,7 +368,7 @@
                       <span
                         class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-success/15 text-success font-medium"
                       >
-                        Free
+                        {t('storage.segFree')}
                       </span>
                     {/if}
                   </td>
@@ -421,9 +428,9 @@
             bind:value={createZPoolAshift}
             class="input w-full font-mono text-xs"
           >
-            <option value={12}>12 (4 KB — Estándar SSD/HDD)</option>
-            <option value={9}>9 (512 B — Discos legados)</option>
-            <option value={13}>13 (8 KB — NVMe avanzado)</option>
+            <option value={12}>{t('storage.ashift12')}</option>
+            <option value={9}>{t('storage.ashift9')}</option>
+            <option value={13}>{t('storage.ashift13')}</option>
           </select>
         </div>
         <div>
@@ -435,10 +442,10 @@
             bind:value={createZPoolCompression}
             class="input w-full font-mono text-xs"
           >
-            <option value="lz4">lz4 (Recomendado, rápido)</option>
-            <option value="zstd">zstd (Alta compresión)</option>
+            <option value="lz4">{t('storage.zfsCompressionLz4')}</option>
+            <option value="zstd">{t('storage.zfsCompressionHigh')}</option>
             <option value="gzip">gzip</option>
-            <option value="off">off (Desactivada)</option>
+            <option value="off">{t('storage.zfsCompressionOff')}</option>
           </select>
         </div>
       </div>
@@ -479,7 +486,7 @@
               />
               <span class="font-mono text-xs font-medium text-foreground">{disk.path}</span>
               <span class="text-[11px] text-muted-foreground"
-                >({disk.size_human} · {disk.model || 'Disk'})</span
+                >({disk.size_human} · {disk.model || t('storage.genericDiskFallback')})</span
               >
             </label>
           {:else}
@@ -542,7 +549,12 @@
         >
         <select id="zvol-pool" bind:value={createZVolPool} class="input w-full font-mono text-xs">
           {#each zpools as pool (pool.name)}
-            <option value={pool.name}>{pool.name} ({pool.free_human} free)</option>
+            <option value={pool.name}
+              >{t('storage.zpoolOptionLabel', {
+                name: pool.name,
+                free: pool.free_human,
+              })}</option
+            >
           {/each}
         </select>
       </div>

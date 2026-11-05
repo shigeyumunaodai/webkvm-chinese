@@ -5,6 +5,7 @@
 // state-changing requests.
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { isMediaRef } from '../utils/mediaRef.js';
+import { t } from '../i18n.svelte.js';
 const STATUS = { CHECKING: 'checking', IN: 'in', OUT: 'out' };
 
 let statusState = $state(STATUS.CHECKING);
@@ -604,11 +605,14 @@ export const api = {
 
       const pct = Math.min(100, Math.max(0, Math.round(job.progress || 0)));
       if (tasksModule) {
-        let title = opts.title || job.name || 'Operación en segundo plano';
-        if (title.startsWith('clone:')) title = `Clonando VM: ${title.slice(6)}`;
-        else if (title.startsWith('batch-clone:')) title = `Clonado en lote: ${title.slice(12)}`;
-        else if (title.startsWith('snapshot:')) title = `Creando instantánea: ${title.slice(9)}`;
-        else if (title.startsWith('move ')) title = `Moviendo disco: ${title.slice(5)}`;
+        let title = opts.title || job.name || t('taskCenter.backgroundOperation');
+        if (title.startsWith('clone:')) title = t('taskCenter.cloningVm', { name: title.slice(6) });
+        else if (title.startsWith('batch-clone:'))
+          title = t('taskCenter.batchClone', { name: title.slice(12) });
+        else if (title.startsWith('snapshot:'))
+          title = t('taskCenter.creatingSnapshot', { name: title.slice(9) });
+        else if (title.startsWith('move '))
+          title = t('taskCenter.movingDisk', { name: title.slice(5) });
 
         tasksModule.upsertTask({
           id: taskId,
@@ -622,12 +626,17 @@ export const api = {
 
       if (job.status === 'done' || job.status === 'completed') {
         if (tasksModule) {
-          tasksModule.finishTask(taskId, 'success', job.message || 'Completado con éxito', 100);
+          tasksModule.finishTask(
+            taskId,
+            'success',
+            job.message || t('taskCenter.completedSuccess'),
+            100
+          );
         }
         return job.result ?? job;
       }
       if (job.status === 'error') {
-        const errMsg = job.error || job.message || 'Job failed';
+        const errMsg = job.error || job.message || t('taskCenter.operationFailed');
         if (tasksModule) {
           tasksModule.finishTask(taskId, 'error', errMsg, pct);
         }
@@ -635,9 +644,9 @@ export const api = {
       }
       if (Date.now() - started > timeout) {
         if (tasksModule) {
-          tasksModule.finishTask(taskId, 'error', 'Operación expiró por tiempo límite', pct);
+          tasksModule.finishTask(taskId, 'error', t('taskCenter.operationTimedOut'), pct);
         }
-        throw new ApiError('Job timed out', 504, 'job_timeout');
+        throw new ApiError(t('taskCenter.operationTimedOut'), 504, 'job_timeout');
       }
       await new Promise((resolve) => setTimeout(resolve, delay));
     }

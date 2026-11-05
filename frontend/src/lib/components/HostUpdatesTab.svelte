@@ -408,13 +408,13 @@
                       <span
                         class="px-1.5 py-0.5 rounded text-[10px] bg-warning/15 text-warning font-medium"
                       >
-                        kernel
+                        {t('hostUpdates.badgeKernel')}
                       </span>
                     {:else if getPackageCategory(pkg.package) === 'core'}
                       <span
                         class="px-1.5 py-0.5 rounded text-[10px] bg-accent/15 text-accent font-medium"
                       >
-                        core
+                        {t('hostUpdates.badgeCore')}
                       </span>
                     {/if}
                     <span class="text-[10px] text-muted-foreground font-mono">({pkg.arch})</span>

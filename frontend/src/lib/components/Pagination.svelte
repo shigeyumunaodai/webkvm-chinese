@@ -8,6 +8,8 @@
    *     bind:page
    *   />
    */
+  import { t } from '$lib/i18n.svelte.js';
+
   // `page` is 0-based. Bind it with `bind:page`, or pass
   // `onpagechange` to be notified without owning the state.
   //
@@ -18,7 +20,7 @@
     total = 0,
     pageSize = 10,
     page = $bindable(0),
-    itemName = 'item',
+    itemName = '',
     onpagechange = null,
   } = $props();
 
@@ -52,8 +54,9 @@
 {#if total > 0}
   <div class="flex items-center justify-between mt-3 text-sm">
     <span class="text-muted-foreground tnum">
-      Showing {start}–{end} of {total}
-      {itemName}{total !== 1 ? 's' : ''}
+      {itemName
+        ? t('common.showingNamed', { from: start, to: end, total, name: itemName })
+        : t('common.showingItems', { from: start, to: end, total })}
     </span>
     <div class="flex items-center gap-1">
       <button
@@ -62,7 +65,7 @@
         onclick={() => go(page - 1)}
         class="px-2.5 py-1 text-sm rounded border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Previous
+        {t('common.previous')}
       </button>
       <span class="px-3 text-muted-foreground tnum">
         {page + 1} / {totalPages}
@@ -73,7 +76,7 @@
         onclick={() => go(page + 1)}
         class="px-2.5 py-1 text-sm rounded border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Next
+        {t('common.next')}
       </button>
     </div>
   </div>

@@ -90,7 +90,7 @@
     {#if categories.length > 0}
       <div
         role="tablist"
-        aria-label="Categorías"
+        aria-label={t('imageCatalog.categories')}
         class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none"
       >
         {#each categories as cat (cat.id)}

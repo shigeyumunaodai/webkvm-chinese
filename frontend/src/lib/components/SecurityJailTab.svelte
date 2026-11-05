@@ -82,7 +82,7 @@
     try {
       await api.manualBanIP({
         ip: banForm.ip.trim(),
-        reason: banForm.reason.trim() || 'Manual ban by administrator',
+        reason: banForm.reason.trim() || t('securityJail.reasonManualAdmin'),
         jail: banForm.jail,
         duration_sec: Number(banForm.duration_sec) || 86400,
       });
@@ -224,7 +224,7 @@
             : 'bg-muted-foreground'}"
         ></span>
         <span class="text-xs font-semibold font-mono text-foreground">
-          {config.ssh_jail?.enabled ? 'PORT 22 (ACTIVE)' : 'DISABLED'}
+          {config.ssh_jail?.enabled ? t('securityJail.port22Active') : t('common.disabled')}
         </span>
       </div>
       <div class="mt-1 text-xs text-muted-foreground">{t('securityJail.sshJailDesc')}</div>
@@ -477,8 +477,8 @@
       <Card class="p-4 border border-border bg-card space-y-3">
         <Switch
           bind:checked={config.enabled}
-          label="Perimeter Defense (Jail Engine)"
-          description="Master switch for kernel-level brute force protection and IP isolation via nftables"
+          label={t('securityJail.masterSwitchLabel')}
+          description={t('securityJail.masterSwitchDesc')}
         />
       </Card>
 
@@ -498,7 +498,7 @@
           <Switch
             bind:checked={config.webkvm_jail.enabled}
             label={t('securityJail.fieldEnabled')}
-            description="Protect WebKVM logins and API endpoints"
+            description={t('securityJail.webkvmSwitchDesc')}
           />
 
           <div class="grid grid-cols-3 gap-2 pt-2">
@@ -542,7 +542,7 @@
           <Switch
             bind:checked={config.ssh_jail.enabled}
             label={t('securityJail.fieldEnabled')}
-            description="Isolate SSH brute-force attackers at kernel level"
+            description={t('securityJail.sshSwitchDesc')}
           />
 
           <div class="grid grid-cols-3 gap-2 pt-2">
@@ -613,8 +613,11 @@
                     {/if}
                   </div>
                   <div class="text-[11px] text-muted-foreground">
-                    {cj.description || 'Custom service'} &bull; {cj.max_attempts} attempts / {cj.window_sec}s
-                    &bull; Ban: {cj.ban_duration_sec}s
+                    {cj.description || t('securityJail.customServiceDefault')} &bull; {t(
+                      'securityJail.attemptsWindow',
+                      { n: cj.max_attempts, window: cj.window_sec }
+                    )}
+                    &bull; {t('securityJail.banDurationShort', { secs: cj.ban_duration_sec })}
                   </div>
                 </div>
 
@@ -659,12 +662,12 @@
       <div class="space-y-3">
         <div class="space-y-1">
           <Label class="text-xs">{t('securityJail.fieldIp')}</Label>
-          <Input placeholder="e.g. 203.0.113.42" bind:value={banForm.ip} />
+          <Input placeholder={t('securityJail.placeholderIp')} bind:value={banForm.ip} />
         </div>
 
         <div class="space-y-1">
           <Label class="text-xs">{t('securityJail.fieldReason')}</Label>
-          <Input placeholder="e.g. Port scanning, SSH brute force" bind:value={banForm.reason} />
+          <Input placeholder={t('securityJail.placeholderReason')} bind:value={banForm.reason} />
         </div>
 
         <div class="space-y-1">
@@ -673,7 +676,7 @@
             class="w-full h-9 rounded-md border border-border bg-background px-3 text-xs"
             bind:value={banForm.jail}
           >
-            <option value="manual">Manual</option>
+            <option value="manual">{t('securityJail.jailManual')}</option>
             <option value="ssh">SSH</option>
             <option value="webkvm">WebKVM</option>
             {#each config.custom_jails || [] as cj (cj.id)}
@@ -726,12 +729,15 @@
       <div class="space-y-3">
         <div class="space-y-1">
           <Label class="text-xs">{t('securityJail.fieldCidr')}</Label>
-          <Input placeholder="e.g. 192.168.1.0/24 or 10.8.0.5" bind:value={whitelistForm.cidr} />
+          <Input placeholder={t('securityJail.placeholderCidr')} bind:value={whitelistForm.cidr} />
         </div>
 
         <div class="space-y-1">
           <Label class="text-xs">{t('securityJail.fieldDesc')}</Label>
-          <Input placeholder="e.g. Admin Office VPN" bind:value={whitelistForm.description} />
+          <Input
+            placeholder={t('securityJail.placeholderDesc')}
+            bind:value={whitelistForm.description}
+          />
         </div>
       </div>
 
@@ -763,13 +769,20 @@
       <div class="space-y-3">
         <div class="space-y-1">
           <Label class="text-xs">{t('securityJail.fieldJailName')}</Label>
-          <Input placeholder="e.g. OpenVPN Gateway, FTP Server" bind:value={customJailForm.name} />
+          <Input
+            placeholder={t('securityJail.placeholderJailName')}
+            bind:value={customJailForm.name}
+          />
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div class="space-y-1">
             <Label class="text-xs">{t('securityJail.fieldPort')}</Label>
-            <Input type="number" placeholder="e.g. 1194" bind:value={customJailForm.port} />
+            <Input
+              type="number"
+              placeholder={t('securityJail.placeholderJailPort')}
+              bind:value={customJailForm.port}
+            />
           </div>
           <div class="space-y-1">
             <Label class="text-xs">{t('securityJail.fieldMaxAttempts')}</Label>
@@ -796,7 +809,7 @@
         <div class="space-y-1">
           <Label class="text-xs">{t('securityJail.fieldDesc')}</Label>
           <Input
-            placeholder="e.g. Blocks port scanners after failed handshakes"
+            placeholder={t('securityJail.placeholderJailDesc')}
             bind:value={customJailForm.description}
           />
         </div>

@@ -78,10 +78,10 @@
           >
             <option value="cpu">CPU</option>
             <option value="ram">RAM</option>
-            <option value="disk_r">Disk R</option>
-            <option value="disk_w">Disk W</option>
-            <option value="net_rx">Net RX</option>
-            <option value="net_tx">Net TX</option>
+            <option value="disk_r">{t('vmDetail.diskRead')}</option>
+            <option value="disk_w">{t('vmDetail.diskWrite')}</option>
+            <option value="net_rx">{t('vmDetail.netRx')}</option>
+            <option value="net_tx">{t('vmDetail.netTx')}</option>
           </select>
           <select
             class="h-8 rounded-lg border border-border bg-background px-1 text-sm w-20"

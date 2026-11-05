@@ -391,7 +391,10 @@ apt-get update -y
           const cloneTargetName = `${vm.name}-clone`;
           const res = await api.cloneVM(vm.id, { name: cloneTargetName });
           const cloned = await api.waitJob(res.job, {
-            title: `Clonando VM: ${vm.alias || vm.name} -> ${cloneTargetName}`,
+            title: t('vmDetail.cloningTitle', {
+              name: vm.alias || vm.name,
+              target: cloneTargetName,
+            }),
             kind: 'clone',
           });
           const cloneName = cloned?.name || cloneTargetName;
@@ -770,21 +773,21 @@ apt-get update -y
           failed++;
         }
       }
-      const label =
+      const labelKey =
         {
-          start: 'iniciadas',
-          shutdown: 'apagadas',
-          reboot: 'reiniciadas',
-          suspend: 'pausadas',
-          resume: 'reanudadas',
-          forceoff: 'apagadas forzosamente',
-          delete: 'eliminadas',
-          'autostart-on': 'autostart activado',
-          'autostart-off': 'autostart desactivado',
-          snapshot: 'instantáneas creadas',
-        }[confirmBulkAction] || 'procesadas';
-      if (succeeded) toast.success(`${succeeded} VM${succeeded !== 1 ? 's' : ''} ${label}`);
-      if (failed) toast.error(`${failed} failed`);
+          start: 'vms.bulkStarted',
+          shutdown: 'vms.bulkShutDown',
+          reboot: 'vms.bulkRebooted',
+          suspend: 'vms.bulkSuspended',
+          resume: 'vms.bulkResumed',
+          forceoff: 'vms.bulkForceOffed',
+          delete: 'vms.bulkDeleted',
+          'autostart-on': 'vms.bulkAutostartOn',
+          'autostart-off': 'vms.bulkAutostartOff',
+          snapshot: 'vms.bulkSnapshotDone',
+        }[confirmBulkAction] || 'vms.bulkProcessed';
+      if (succeeded) toast.success(t(labelKey, { n: succeeded }));
+      if (failed) toast.error(t('vms.bulkFailed', { n: failed }));
       confirmBulkOpen = false;
       selectedKeys = new SvelteSet();
       selectMode = false;
@@ -821,7 +824,7 @@ apt-get update -y
     }
     const namesLabel = namesToAdd.map((n) => `"${n}"`).join(', ');
     if (ok) toast.success(t('vms.assignedCount', { ok, names: namesLabel }));
-    if (fail) toast.error(`${fail} failed`);
+    if (fail) toast.error(t('vms.bulkFailed', { n: fail }));
     showAssignGroup = false;
     assignGroupNames = new SvelteSet();
     selectedKeys = new SvelteSet();
@@ -878,7 +881,7 @@ apt-get update -y
       const msg = e.message || '';
       toast.error(msg);
       if (/collides with a system group/i.test(msg)) {
-        appErrorTitle = 'User name not available';
+        appErrorTitle = t('vms.userNameNotAvailable');
         appErrorMessage = msg;
         showAppError = true;
       }
@@ -893,22 +896,20 @@ apt-get update -y
     }
     if (instCI) {
       if (!instCIUser.trim()) {
-        return ciFail('Username is required for cloud-init provisioning');
+        return ciFail(t('vmCreate.ciUserRequired'));
       }
       if (
         /^(root|daemon|bin|sys|sync|games|man|lp|mail|news|uucp|proxy|www-data|backup|list|irc|_apt|nobody|systemd-network|systemd-timesync|dhcpcd|messagebus|syslog|systemd-resolve|uuidd|tss|sshd|pollinate|tcpdump|landscape|fwupd-refresh|polkitd|sudo|adm|admin)$/i.test(
           instCIUser
         )
       ) {
-        return ciFail(
-          `"${instCIUser}" is a system group and would fail to provision; choose a different user name`
-        );
+        return ciFail(t('vmCreate.ciUserReserved'));
       }
       if (!instCIPassword) {
-        return ciFail('Password is required for cloud-init provisioning');
+        return ciFail(t('vmCreate.ciPasswordRequired'));
       }
       if (instCIPassword.length < 6 || instCIPassword.length > 12) {
-        return ciFail('Password must be 6-12 characters');
+        return ciFail(t('vms.ciPasswordLength'));
       }
     }
     instSaving = true;
@@ -927,7 +928,7 @@ apt-get update -y
       const r = await api.instantiateTemplate(instTemplateId, data);
       if (r.warning) {
         showInstantiate = false;
-        appErrorTitle = 'Provisioning not possible';
+        appErrorTitle = t('vms.provisioningNotPossible');
         appErrorMessage = r.warning;
         showAppError = true;
         await loadVMs();
@@ -963,7 +964,9 @@ apt-get update -y
         appNets = def;
       } catch (e) {
         netOptions = [];
-        toast.warning('Could not load network list: ' + (e.message || 'unknown error'));
+        toast.warning(
+          t('vms.couldNotLoadNetworkList', { error: e.message || t('common.unknownError') })
+        );
       }
     } catch (e) {
       toast.error(e.message);
@@ -1039,7 +1042,7 @@ apt-get update -y
     } catch (e) {
       appScript = '';
       appScriptOrig = '';
-      appEditorError = 'Could not load provisioning script: ' + e.message;
+      appEditorError = t('vms.couldNotLoadProvisioning', { error: e.message });
     } finally {
       appScriptLoading = false;
     }
@@ -1055,7 +1058,7 @@ apt-get update -y
   function scriptInputHandler(e) {
     if (e.target.value.trim() && !appForm.cloud_init_supported) {
       appForm.cloud_init_supported = true;
-      toast.info('Cloud-init activado automáticamente (los scripts lo requieren)');
+      toast.info(t('vms.cloudInitAutoEnabled'));
     }
   }
 
@@ -1063,7 +1066,7 @@ apt-get update -y
     try {
       const r = await api.getApplianceProvision(app.id);
       viewScriptApp = app;
-      viewScriptText = r.script || '(sin script de instalación)';
+      viewScriptText = r.script || t('vms.noInstallScript');
       showScriptView = true;
     } catch (e) {
       toast.error(e.message);
@@ -1073,7 +1076,7 @@ apt-get update -y
   async function saveAppliance() {
     appEditorError = '';
     if (!appForm.id.trim() || !appForm.name.trim() || !appForm.url.trim()) {
-      appEditorError = 'ID, name and URL are required';
+      appEditorError = t('vms.idNameUrlRequired');
       return;
     }
     appSaving = true;
@@ -1102,10 +1105,10 @@ apt-get update -y
       }
       if (appEditorMode === 'create') {
         await api.createAppliance(payload);
-        toast.success('Appliance added');
+        toast.success(t('vms.applianceAdded'));
       } else {
         await api.updateAppliance(appEditId, payload);
-        toast.success('Appliance updated');
+        toast.success(t('vms.applianceUpdated'));
       }
       showAppEditor = false;
       await loadAppliances();
@@ -1136,14 +1139,14 @@ apt-get update -y
     }
     // Second confirmation: require the exact appliance name.
     if (appDeleteText.trim() !== (appDeleteTarget?.name || '')) {
-      appDeleteError = 'Type the appliance name to confirm';
+      appDeleteError = t('vms.typeApplianceName');
       return;
     }
     appDeleting = true;
     appDeleteError = '';
     try {
       await api.deleteAppliance(appDeleteTarget.id);
-      toast.success('Appliance deleted');
+      toast.success(t('vms.applianceDeleted'));
       showAppDelete = false;
       appDeleteTarget = null;
       await loadAppliances();
@@ -1205,7 +1208,7 @@ apt-get update -y
   // tapado por el overlay del diálogo; el modal siempre se ve).
   function ciFail(msg) {
     toast.error(msg);
-    appErrorTitle = 'Provisioning not possible';
+    appErrorTitle = t('vms.provisioningNotPossible');
     appErrorMessage = msg;
     showAppError = true;
   }
@@ -1253,19 +1256,17 @@ apt-get update -y
       if (app.cloud_init_supported) {
         const user = (appCIUsers[app.id] || '').trim();
         const pass = appCIPasswords[app.id] || '';
-        if (!user) return ciFail('Username is required for cloud-init provisioning');
+        if (!user) return ciFail(t('vmCreate.ciUserRequired'));
         if (
           /^(root|daemon|bin|sys|sync|games|man|lp|mail|news|uucp|proxy|www-data|backup|list|irc|_apt|nobody|systemd-network|systemd-timesync|dhcpcd|messagebus|syslog|systemd-resolve|uuidd|tss|sshd|pollinate|tcpdump|landscape|fwupd-refresh|polkitd|sudo|adm|admin)$/i.test(
             user
           )
         ) {
-          return ciFail(
-            `"${user}" is a system group and would fail to provision; choose a different user name`
-          );
+          return ciFail(t('vmCreate.ciUserReserved'));
         }
-        if (!pass) return ciFail('Password is required for cloud-init provisioning');
-        if (pass.length < 6) return ciFail('Password must be at least 6 characters');
-        if (pass.length > 12) return ciFail('Password must be at most 12 characters');
+        if (!pass) return ciFail(t('vmCreate.ciPasswordRequired'));
+        if (pass.length < 6) return ciFail(t('vmCreate.ciPasswordMin'));
+        if (pass.length > 12) return ciFail(t('vmCreate.ciPasswordMax'));
         body.cloud_init = {
           user,
           password: pass,
@@ -1291,7 +1292,7 @@ apt-get update -y
       const msg = e.message || '';
       toast.error(msg);
       if (/system group|password is required|at most 12/i.test(msg)) {
-        appErrorTitle = 'Provisioning not possible';
+        appErrorTitle = t('vms.provisioningNotPossible');
         appErrorMessage = msg;
         showAppError = true;
       }
@@ -1863,7 +1864,7 @@ apt-get update -y
     >
       {t('vms.allStates')} <span class="text-[10px] opacity-60">({vms.length})</span>
     </button>
-    {#each [{ v: 'running', c: 'bg-status-running', l: 'running' }, { v: 'shutoff', c: 'bg-status-shutoff', l: 'shutoff' }, { v: 'paused', c: 'bg-status-paused', l: 'paused' }, { v: 'crashed', c: 'bg-status-crashed', l: 'crashed' }] as s (s.v)}
+    {#each [{ v: 'running', c: 'bg-status-running', l: t('common.running') }, { v: 'shutoff', c: 'bg-status-shutoff', l: t('common.shutoff') }, { v: 'paused', c: 'bg-status-paused', l: t('common.paused') }, { v: 'crashed', c: 'bg-status-crashed', l: t('common.crashed') }] as s (s.v)}
       {@const count = vms.filter((v) => v.state === s.v).length}
       {#if count > 0 || stateFilter === s.v}
         <button
@@ -2819,7 +2820,7 @@ apt-get update -y
       <div class="mb-3 flex justify-end">
         <Button size="sm" variant="outline" onclick={openAppCreate}>
           <Plus class="w-3.5 h-3.5 mr-1.5" />
-          Add appliance
+          {t('appstore.addAppliance')}
         </Button>
       </div>
     {/if}
@@ -2945,8 +2946,7 @@ apt-get update -y
                             </div>
                           </div>
                           <p class="text-[10px] text-muted-foreground mt-1">
-                            Used to log in on the serial console. QEMU guest agent is installed
-                            automatically for password resets from WebKVM.
+                            {t('vms.applianceCredentialsHint')}
                           </p>
                         {/if}
                       </div>
@@ -2992,7 +2992,7 @@ apt-get update -y
                             type="button"
                             onclick={() => openViewScript(app)}
                             class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-                            title="Ver / editar script de instalación"
+                            title={t('vms.viewInstallScript')}
                           >
                             <FileCode2 class="w-3.5 h-3.5" />
                           </button>
@@ -3003,8 +3003,8 @@ apt-get update -y
                               type="button"
                               onclick={() => openAppEdit(app)}
                               class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-                              aria-label="Edit appliance"
-                              title="Edit appliance"
+                              aria-label={t('vms.editAppliance')}
+                              title={t('vms.editAppliance')}
                             >
                               <Pencil class="w-3.5 h-3.5" />
                             </button>
@@ -3012,8 +3012,8 @@ apt-get update -y
                               type="button"
                               onclick={() => askDeleteApp(app)}
                               class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                              aria-label="Delete appliance"
-                              title="Delete appliance"
+                              aria-label={t('appstore.deleteAppliance')}
+                              title={t('appstore.deleteAppliance')}
                             >
                               <Trash2 class="w-3.5 h-3.5" />
                             </button>
@@ -3087,11 +3087,11 @@ apt-get update -y
             >{t('appstore.applianceCategory')}</label
           >
           <select id="app-cat" bind:value={appForm.category} class="input w-full">
-            <option value="cloud">Cloud OS</option>
-            <option value="nas">Network storage</option>
-            <option value="router">Router / firewall</option>
-            <option value="home">Home automation</option>
-            <option value="app">Application</option>
+            <option value="cloud">{t('vms.cat_cloud')}</option>
+            <option value="nas">{t('vms.cat_nas')}</option>
+            <option value="router">{t('vms.cat_router')}</option>
+            <option value="home">{t('vms.cat_home')}</option>
+            <option value="app">{t('vms.cat_app')}</option>
           </select>
         </div>
       </div>
@@ -3138,9 +3138,7 @@ apt-get update -y
             oninput={scriptInputHandler}
             rows="12"
             spellcheck="false"
-            placeholder="#!/bin/bash
-set -e
-# tus comandos de instalación..."
+            placeholder={t('vms.scriptPlaceholder')}
             class="input w-full font-mono text-[11px] leading-snug"
           ></textarea>
         {/if}
@@ -3235,16 +3233,12 @@ set -e
     </Dialog.Header>
     <div class="space-y-3">
       {#if appDeleteTarget?.builtin}
-        <p class="text-sm text-destructive">
-          This is a built-in appliance. Deleting it is permanent. Confirm twice to proceed.
-        </p>
+        <p class="text-sm text-destructive">{t('vms.deleteBuiltinApplianceHint')}</p>
       {:else}
-        <p class="text-sm text-muted-foreground">
-          Deleting this appliance is permanent. Confirm twice to proceed.
-        </p>
+        <p class="text-sm text-muted-foreground">{t('vms.deleteApplianceHint')}</p>
       {/if}
       <p class="text-xs text-muted-foreground">
-        Step {appDeleteStep} of 2 — click Delete, then type the appliance name and confirm again.
+        {t('vms.deleteApplianceStep', { step: appDeleteStep })}
       </p>
       <Input bind:value={appDeleteText} placeholder={appDeleteTarget?.name} class="w-full" />
       {#if appDeleteError}
@@ -3253,14 +3247,14 @@ set -e
     </div>
     <Dialog.Footer class="gap-2">
       <Button variant="outline" onclick={() => (showAppDelete = false)} disabled={appDeleting}>
-        Cancel
+        {t('common.cancel')}
       </Button>
       <Button
         variant="destructive"
         onclick={confirmDeleteApp}
         disabled={appDeleting || appDeleteText.trim() !== appDeleteTarget?.name}
       >
-        {#if appDeleting}<Spinner size="sm" color="text-white" />{:else}Delete{/if}
+        {#if appDeleting}<Spinner size="sm" color="text-white" />{:else}{t('common.delete')}{/if}
       </Button>
     </Dialog.Footer>
   </Dialog.Content>
@@ -3314,7 +3308,7 @@ set -e
               <span class="font-mono">{appCIUsers[deployApp.id] || '—'}</span>
             </div>
             <div class="flex justify-between gap-2">
-              <span class="text-muted-foreground">Password</span>
+              <span class="text-muted-foreground">{t('common.password')}</span>
               <span class="font-mono">{appCIPasswords[deployApp.id] ? '••••••' : '—'}</span>
             </div>
           </div>
@@ -3361,16 +3355,19 @@ set -e
   <Dialog.Content class="sm:max-w-3xl">
     <Dialog.Header>
       <Dialog.Title>
-        Script de instalación{viewScriptApp ? ` — ${viewScriptApp.name || viewScriptApp.id}` : ''}
+        {t('vms.installScriptTitle')}{viewScriptApp
+          ? ` — ${viewScriptApp.name || viewScriptApp.id}`
+          : ''}
       </Dialog.Title>
       <Dialog.Description>
-        Bash ejecutado como root en el primer arranque de la VM.
+        {t('vms.installScriptDesc')}
       </Dialog.Description>
     </Dialog.Header>
     <pre
       class="max-h-[55vh] overflow-auto rounded-lg border border-border bg-muted/50 p-4 text-[11px] font-mono leading-snug whitespace-pre-wrap">{viewScriptText}</pre>
     <Dialog.Footer class="gap-2">
-      <Button variant="outline" onclick={() => (showScriptView = false)}>Cerrar</Button>
+      <Button variant="outline" onclick={() => (showScriptView = false)}>{t('common.close')}</Button
+      >
       {#if auth.isAdmin() && viewScriptApp}
         <Button
           onclick={() => {
@@ -3378,7 +3375,8 @@ set -e
             openAppEdit(viewScriptApp);
           }}
         >
-          <Pencil class="w-3.5 h-3.5 mr-1.5" /> Editar
+          <Pencil class="w-3.5 h-3.5 mr-1.5" />
+          {t('common.edit')}
         </Button>
       {/if}
     </Dialog.Footer>

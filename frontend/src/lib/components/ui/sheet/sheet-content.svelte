@@ -29,6 +29,7 @@
   import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
   import type { ComponentProps } from 'svelte';
   import { Button } from '$lib/components/ui/button/index.js';
+  import { t } from '$lib/i18n.svelte.js';
   import XIcon from '@lucide/svelte/icons/x';
 
   let {
@@ -61,7 +62,7 @@
         {#snippet child({ props })}
           <Button variant="ghost" class="absolute top-3 right-3" size="icon-sm" {...props}>
             <XIcon />
-            <span class="sr-only">Close</span>
+            <span class="sr-only">{t('common.close')}</span>
           </Button>
         {/snippet}
       </DialogPrimitive.Close>

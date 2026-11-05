@@ -268,7 +268,9 @@
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
       </div>
       <div class="mt-1 text-xs text-muted-foreground">
-        {summary?.offline_nodes ? `${summary.offline_nodes} offline` : '100% reachable'}
+        {summary?.offline_nodes
+          ? t('nodes.offlineCount', { n: summary.offline_nodes })
+          : t('nodes.allReachable')}
       </div>
     </Card>
 
@@ -279,7 +281,7 @@
       <div class="mt-2 text-2xl font-bold font-mono text-foreground">
         {summary?.avg_latency_ms != null ? `${summary.avg_latency_ms} ms` : '—'}
       </div>
-      <div class="mt-1 text-xs text-muted-foreground">RTT latency probe</div>
+      <div class="mt-1 text-xs text-muted-foreground">{t('nodes.rttLatencyProbe')}</div>
     </Card>
 
     <Card class="p-4 border border-border bg-card/60">
@@ -291,9 +293,9 @@
       </div>
       <div class="mt-1 text-xs text-muted-foreground">
         {#if summary?.total_disk_total}
-          Free of {formatBytes(summary.total_disk_total)}
+          {t('nodes.freeOf', { size: formatBytes(summary.total_disk_total) })}
         {:else}
-          Fleet storage free
+          {t('nodes.fleetStorageFree')}
         {/if}
       </div>
     </Card>

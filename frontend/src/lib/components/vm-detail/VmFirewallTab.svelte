@@ -132,7 +132,7 @@
             bind:value={fw.host_port}
             min="1"
             max="65535"
-            placeholder="Host port"
+            placeholder={t('firewall.hostPort')}
           />
           <span class="text-muted-foreground">→</span>
           <Input
@@ -141,7 +141,7 @@
             bind:value={fw.guest_port}
             min="1"
             max="65535"
-            placeholder="Guest port"
+            placeholder={t('firewall.guestPort')}
           />
           {#if fw.applied}
             <span class="text-xs text-success">{t('vmDetail.fwApplied')}</span>
@@ -184,7 +184,7 @@
             bind:value={r.port}
             min="1"
             max="65535"
-            placeholder="Port"
+            placeholder={t('firewall.port')}
           />
           <select class="input w-24" bind:value={r.action}>
             <option value="allow">{t('vmDetail.fwAllow')}</option>

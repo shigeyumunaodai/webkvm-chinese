@@ -117,7 +117,7 @@
               class="!h-8 w-24 tnum text-xs"
             />
             <span class="text-xs text-muted-foreground">
-              {t('vmDetail.retentionCount', { n: schedSnapMax }) || `${schedSnapMax} instantáneas`}
+              {t('vmDetail.retentionCount', { n: schedSnapMax })}
             </span>
           </div>
         </div>

@@ -14,7 +14,7 @@ describe('VmCreate wizard mode translations', () => {
     'cpuFlagsDetailedHelper',
   ];
 
-  const langs = ['en', 'es', 'ca'];
+  const langs = ['en', 'es', 'ca', 'zh'];
 
   langs.forEach((lang) => {
     describe(`Language: ${lang}`, () => {
@@ -102,6 +102,7 @@ describe('VmCreate wizard mode translations', () => {
     const enKeys = new Set(getAllKeys(messages.en));
     const esKeys = new Set(getAllKeys(messages.es));
     const caKeys = new Set(getAllKeys(messages.ca));
+    const zhKeys = new Set(getAllKeys(messages.zh));
 
     it('en and es have matching keys', () => {
       const missingInEs = [...enKeys].filter((k) => !esKeys.has(k));
@@ -115,6 +116,13 @@ describe('VmCreate wizard mode translations', () => {
       const extraInCa = [...caKeys].filter((k) => !enKeys.has(k));
       expect(missingInCa, `Keys in en but missing in ca: ${missingInCa.join(', ')}`).toEqual([]);
       expect(extraInCa, `Keys in ca but missing in en: ${extraInCa.join(', ')}`).toEqual([]);
+    });
+
+    it('en and zh have matching keys', () => {
+      const missingInZh = [...enKeys].filter((k) => !zhKeys.has(k));
+      const extraInZh = [...zhKeys].filter((k) => !enKeys.has(k));
+      expect(missingInZh, `Keys in en but missing in zh: ${missingInZh.join(', ')}`).toEqual([]);
+      expect(extraInZh, `Keys in zh but missing in en: ${extraInZh.join(', ')}`).toEqual([]);
     });
   });
 });

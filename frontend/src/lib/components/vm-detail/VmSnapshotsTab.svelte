@@ -126,7 +126,11 @@
 
 <BlockCard bid="snaps" title={t('vmDetail.snapshots')} anchor="snapshots">
   <div class="flex gap-2 mb-3">
-    <Input bind:value={snapName} placeholder="Snapshot name" class="flex-1" />
+    <Input
+      bind:value={snapName}
+      placeholder={t('vmDetail.snapshotNamePlaceholder')}
+      class="flex-1"
+    />
     <Button onclick={createSnapshot} disabled={!snapName || actionLoading === 'snapshot'}>
       {#if actionLoading === 'snapshot'}<Spinner size="xs" color="text-white" />{:else}{t(
           'vmDetail.createSnapshot'
@@ -198,7 +202,7 @@
             class="!h-8 w-24 tnum text-xs"
           />
           <span class="text-xs text-muted-foreground">
-            {t('vmDetail.retentionCount', { n: schedSnapMax }) || `${schedSnapMax} instantáneas`}
+            {t('vmDetail.retentionCount', { n: schedSnapMax })}
           </span>
         </div>
       </div>

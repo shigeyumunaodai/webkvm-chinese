@@ -301,7 +301,7 @@
               {/if}
               {#if vol.children.length > 0}
                 <span class="text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-mono">
-                  {vol.children.length} snap{vol.children.length > 1 ? 's' : ''}
+                  {t('vmDetail.retentionCount', { n: vol.children.length })}
                 </span>
               {/if}
             </div>
