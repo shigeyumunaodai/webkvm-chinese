@@ -22,6 +22,16 @@ Spanish version: [CHANGELOG.es.md](CHANGELOG.es.md).
   `--github-proxy=` (`WEBKVM_CN_MIRRORS`, `WEBKVM_CN_COMPONENTS`,
   `WEBKVM_GH_PROXY`); `scripts/install-webkvm.sh` also accepts
   `WEBKVM_INSTALL_TARBALL_URL`; new `make cn-mirrors` / `make test-cn-mirrors`.
+- **Host-network recovery tool (`scripts/fix-bridge-port-ip.sh`):** detects a
+  bridge port that kept an IPv4 address after being enslaved to a Linux bridge
+  (a common Debian/Ubuntu ifupdown leftover). After a reboot that gives the
+  bridge and its port the same IP, making the host unreachable over IPv4 while
+  VMs keep running (ARP flux; bridge L2 forwarding is unaffected). The script is
+  dry-run by default; `--apply` backs up the network state, removes the
+  duplicate port addresses, repoints the default route at the bridge and
+  comments the conflicting `/etc/network/interfaces` stanzas. `setup-network.sh`
+  now warns about the same conflict, and `docs/zh/DEPLOYMENT.md` §13.11 documents
+  diagnosis, console-free IPv6 link-local recovery and permanent fixing.
 - **Chinese documentation:** `README.zh.md` and a complete `docs/zh/` mirror
   (deployment, installation, usage, CLI, Docker, API, FAQ, architecture,
   comparison, security, China-network guide and 5 operations runbooks), with

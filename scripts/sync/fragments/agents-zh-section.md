@@ -14,6 +14,7 @@
   Pagination, etiquetas a11y `Close`/`Dismiss`/`Select`...).
 - **Documentación china**: `README.zh.md` + `docs/zh/**` (incluye
   `docs/zh/DEPLOYMENT.md`, `docs/zh/CHINA-NETWORK.md`, `docs/zh/runbooks/`).
+- **Recuperación de red del host**: `scripts/fix-bridge-port-ip.sh` (dry-run por defecto, `--apply` repara IP duplicada en puerto de bridge; ver `docs/zh/DEPLOYMENT.md` §13.11) y aviso en `scripts/setup-network.sh` cuando ifupdown también configura la interfaz física.
 - **Red doméstica (China)**: `scripts/cn-mirrors.sh`, su test offline
   `scripts/qa/test-cn-mirrors.sh`, flags del instalador
   `--cn-mirrors/--cn-components/--github-proxy` y variables `WEBKVM_CN_*`,

@@ -1271,7 +1271,7 @@ sudo reboot                                # 极端情况下清空残留 socket 
 | 实例从 `vmbr0` 拿不到 IP | `ip -br addr show vmbr0`；确认网桥 UP 且物理口 `master vmbr0`；检查路由器 DHCP 池；`journalctl -u NetworkManager`/`networkctl status`。 |
 | 实例从 `vmbr1` 拿不到 IP | `systemctl status webkvm-vmbr1-dnsmasq.service`；`cat /etc/webkvm/vmbr1-dnsmasq.conf`；`ss -lunp \| grep :67`；防火墙是否放行 DHCP/DNS。 |
 | NAT 实例无法出网 | 检查 `MASQUERADE` 规则（`iptables -t nat -L POSTROUTING -n` / `nft list ruleset` / firewalld internal 区）；确认宿主机能出网。 |
-| 宿主 SSH 断了 | 用物理控制台/IPMI 执行 `sudo bash scripts/recover-network.sh`，或把 netplan 备份文件（`*.webkvm-removed`）恢复后 `netplan apply`。 |
+| 宿主 SSH 断了 | 用物理控制台/IPMI 执行 `sudo bash scripts/recover-network.sh`，或把 netplan 备份文件（`*.webkvm-removed`）恢复后 `netplan apply`。若**重启后**宿主机 SSH/Web 失联但虚拟机网络正常，见 13.11（网桥从口重复 IP）。 |
 | 容器无网络 | 确认 Incus 默认 profile 的网卡指向 `vmbr0`（安装器会自动设置）；`incus profile show default`。 |
 
 ### 13.9 服务启动失败（systemd）
@@ -1302,6 +1302,72 @@ grep -i incus_connected /opt/webkvm/logs/backend.log 2>/dev/null || journalctl -
 
 处理：安装并启动 Incus（`sudo apt install incus && sudo systemctl enable --now incus && sudo incus admin init --auto`），在 systemd 单元/drop-in 里确认 `Environment=WEBKVM_INCUS_ENABLED=1`；非 root 运行需把用户加入 `incus-admin` 组（旧 LXD 为 `lxd` 组）。
 
+
+### 13.11 重启后宿主机 SSH/Web 失联，但虚拟机一切正常（网桥从口重复 IP）
+
+**症状**：服务器重启后，`ping`/SSH/Web UI 都无法访问宿主机，但里面的 KVM 虚拟机、
+容器网络和服务完全正常；同一局域网内的 ARP 显示宿主机 IP 对应的 MAC 是物理网卡
+（如 `enp3s0`）的 MAC，而不是网桥 `vmbr0` 的 MAC。
+
+**根因**：Debian/Ubuntu 的 ifupdown 仍把静态 IP 配置在物理网卡上
+（`/etc/network/interfaces` 的 `auto enp3s0` / `iface enp3s0 inet static`）。
+WebKVM/安装器已把物理网卡作为从口加入 `vmbr0` 并把 IP 配在网桥上；重启时
+`systemd-networkd` 先建桥，随后 `networking.service` 又执行 ifupdown，把**同一个 IP
+再加到网桥从口上**。于是两个接口用不同 MAC 同时应答同一 IP 的 ARP（ARP flux），
+管理流量被发往错误的 MAC/接口而黑洞；Linux 网桥的二层转发不依赖宿主 IP，所以
+虚拟机的网络不受影响。
+
+**快速确认**（在能进入宿主机的任意控制台/串口/IPMI，或从同一二层网络的机器上）：
+
+```bash
+ip -br addr                 # 物理网卡和 vmbr0 是否都挂着 192.168.6.76/24？
+ip route                    # 默认路由是不是 dev enp3s0（应该是 vmbr0）？
+ip -d link show vmbr0       # 物理网卡是否为 bridge_slave
+journalctl -b -u networking.service --no-pager | tail -20
+cat /etc/network/interfaces # 是否仍有 auto <物理网卡> / iface <物理网卡> 静态配置
+```
+
+**无需物理控制台的应急恢复**：宿主机通常仍保留 IPv6 链路本地地址，可从同一
+二层网络的 Linux/Mac 执行 `ip -6 neigh`/`ndp -an` 找到 `vmbr0` 的 `fe80::...`，
+然后 `ssh -6 root@fe80::xxxx%<网卡名>` 登录（Mac 上的 `%en1` 是 Wi-Fi/网卡名）。
+
+登录后执行（**不会影响正在运行的 VM**）：
+
+```bash
+# 1) 从物理网卡上移除与网桥重复的地址（只删物理口，不动 vmbr0）
+ip addr del 192.168.6.76/24 dev enp3s0
+ip -6 addr flush dev enp3s0 scope global
+
+# 2) 把默认路由切回网桥
+ip route del default dev enp3s0 2>/dev/null || true
+ip route add default via 192.168.6.1 dev vmbr0
+
+# 3) 验证
+ping -c 2 192.168.6.1
+curl -kfsS https://127.0.0.1:8080/api/health
+```
+
+**永久修复**：备份并注释 `/etc/network/interfaces`（以及 `interfaces.d/`）里
+物理网卡的 `auto` / `allow-hotplug` / `iface` 段落，物理网卡交由
+`systemd-networkd` 作为网桥从口管理：
+
+```bash
+sudo cp -a /etc/network/interfaces /root/interfaces.bak.$(date +%s)
+sudo sed -i '/^auto enp3s0$/,/^iface enp3s0 inet6 static$/ { s/^/#/ }' /etc/network/interfaces
+# 需要按实际文件内容确认；注释后应只剩 lo 的配置
+```
+
+也可以直接用仓库自带的修复脚本（默认只检查，`--apply` 才修改；会备份网络状态、
+自动移除重复 IP、修正默认路由并注释冲突的 ifupdown 配置）：
+
+```bash
+sudo bash scripts/fix-bridge-port-ip.sh            # dry-run
+sudo bash scripts/fix-bridge-port-ip.sh --apply    # 修复
+```
+
+> 注意：WebKVM 服务本身没有坏，恢复网络后无需重启 `webkvm`；也**不需要重启服务器**。
+> 验证完成前不要再次重启；修复后建议找维护窗口重启一次，确认
+> `ip -br addr` 中物理网卡不再有 IP、`vmbr0` 持有管理 IP、默认路由 `dev vmbr0`。
 ---
 
 ## 14. 附录

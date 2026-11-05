@@ -2131,6 +2131,41 @@ EOF
     fi
 fi
 
+# --------------------------------------------------------------------------
+# Warn about ifupdown (/etc/network/interfaces) also configuring the physical
+# bridge port. On Debian/Ubuntu this is a common leftover from the OS install:
+# the next reboot then puts the same static IP on both the bridge and its port,
+# which black-holes host management traffic (SSH/Web UI) while VMs keep working
+# because the kernel bridge still forwards their L2 traffic.
+warn_ifupdown_bridge_conflict() {
+    local ifc="${IFACE:-}" f found=0
+    [[ -n "${ifc}" ]] || return 0
+    [[ -d "/sys/class/net/${ifc}" ]] || return 0
+    local files=(/etc/network/interfaces)
+    shopt -s nullglob
+    files+=(/etc/network/interfaces.d/*)
+    shopt -u nullglob
+    for f in "${files[@]}"; do
+        [[ -f "${f}" ]] || continue
+        if grep -qE "^[[:space:]]*(auto|allow-hotplug)[[:space:]]+([^#]*[[:space:]])?${ifc}([[:space:]]|$)|^[[:space:]]*iface[[:space:]]+${ifc}([[:space:]]|$)" "${f}" 2>/dev/null; then
+            found=1
+            echo "  ! WARNING: ${f} also configures ${ifc} (ifupdown)."
+        fi
+    done
+    if [[ "${found}" -eq 1 ]]; then
+        cat <<EOF
+  ! After a reboot ifupdown can add a duplicate IP to the bridge port
+  ! ${ifc}: the HOST may become unreachable over IPv4 while VMs keep
+  ! working. Back up and comment out the 'auto/allow-hotplug/iface ${ifc}'
+  ! stanzas, or run after reboot: sudo bash scripts/fix-bridge-port-ip.sh --apply
+EOF
+    fi
+}
+
+if [[ "${MODE}" == "bridge" || "${MODE}" == "both" ]]; then
+    warn_ifupdown_bridge_conflict
+fi
+
 echo ""
 echo "=== network setup complete ==="
 if [[ "${MODE}" == "nat" ]]; then

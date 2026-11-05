@@ -105,7 +105,7 @@ jobs:
             scripts/setup-network.sh scripts/setup-bridge.sh \
             scripts/generate-self-signed.sh scripts/install-caddy-systemd.sh \
             scripts/Caddyfile scripts/smoke.sh scripts/webkvm-backup.sh \
-            docs/zh
+            scripts/fix-bridge-port-ip.sh docs/zh
           ( cd dist && sha256sum \
               "webkvm-${BARE}-linux_amd64" \
               "webkvm-cli-${BARE}-linux_amd64" \
