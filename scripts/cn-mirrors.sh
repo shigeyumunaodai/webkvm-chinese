@@ -980,8 +980,8 @@ gitconfig_block() {
 print_git_one_shot_usage() {
   local proxy_base="${GITHUB_PROXY%/}/"
   log "git 一次性用法（不写任何配置）："
-  log "  git clone ${proxy_base}https://github.com/Slaker19/webkvm"
-  log "  curl -fsSL ${proxy_base}https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh"
+  log "  git clone ${proxy_base}https://github.com/shigeyumunaodai/webkvm-chinese"
+  log "  curl -fsSL ${proxy_base}https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh"
 }
 
 run_git() {

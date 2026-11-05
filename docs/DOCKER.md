@@ -34,7 +34,7 @@ One line, from a fresh server — installs libvirt/QEMU and Docker if
 missing, then deploys the published image:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
 ```
 
 Or, from a checkout of this repo:

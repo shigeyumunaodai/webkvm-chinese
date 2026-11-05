@@ -900,7 +900,7 @@ else
   # `git clone` checkouts where backend/webkvm has not been built, and any
   # server that only has the installer script (curl | bash one-liner).
   log "fetching latest release tarball from GitHub..."
-  RELEASE_API="https://api.github.com/repos/Slaker19/webkvm/releases/latest"
+  RELEASE_API="https://api.github.com/repos/shigeyumunaodai/webkvm-chinese/releases/latest"
   RELEASE_TAG=$(curl -fsSL --retry 3 --proto '=https' --tlsv1.2 "${RELEASE_API}" 2>/dev/null | grep -o '"tag_name": *"[^"]*"' | head -1 | cut -d'"' -f4 || true)
   TARBALL_URL=$(curl -fsSL --retry 3 --proto '=https' --tlsv1.2 "${RELEASE_API}" 2>/dev/null | grep -o '"browser_download_url": *"[^"]*webkvm-[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4 || true)
   SHA256_URL=$(curl -fsSL --retry 3 --proto '=https' --tlsv1.2 "${RELEASE_API}" 2>/dev/null | grep -o '"browser_download_url": *"[^"]*SHA256SUMS[^"]*"' | head -1 | cut -d'"' -f4 || true)
@@ -931,7 +931,7 @@ else
       die "release tarball does not contain backend/webkvm"
     fi
   else
-    die "no webkvm binary found. Provide one with WEBKVM_BINARY=<path>, WEBKVM_BINARY_URL=<https>+WEBKVM_BINARY_SHA256, build it with 'make dist' (the server never compiles), or check that a GitHub release for Slaker19/webkvm exists. If api.github.com is blocked, set WEBKVM_BINARY_URL (a direct release asset URL) or WEBKVM_UPDATE_REF and retry with --github-proxy=https://ghfast.top/ for the GitHub CDN."
+    die "no webkvm binary found. Provide one with WEBKVM_BINARY=<path>, WEBKVM_BINARY_URL=<https>+WEBKVM_BINARY_SHA256, build it with 'make dist' (the server never compiles), or check that a GitHub release for shigeyumunaodai/webkvm-chinese exists. If api.github.com is blocked, set WEBKVM_BINARY_URL (a direct release asset URL) or WEBKVM_UPDATE_REF and retry with --github-proxy=https://ghfast.top/ for the GitHub CDN."
   fi
 fi
 [[ -x "${SOURCE_BIN}" ]] || die "binary not found: ${SOURCE_BIN}"
@@ -1032,13 +1032,13 @@ if [[ ! -f "${UPDATE_SRC}" ]]; then
     UPDATE_REF="${BASH_REMATCH[1]}"
   fi
   if [[ -z "${UPDATE_REF}" ]]; then
-    UPDATE_REF=$(curl -fsSL --retry 3 --proto '=https' --tlsv1.2 "https://api.github.com/repos/Slaker19/webkvm/releases/latest" 2>/dev/null | grep -o '"tag_name": *"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+    UPDATE_REF=$(curl -fsSL --retry 3 --proto '=https' --tlsv1.2 "https://api.github.com/repos/shigeyumunaodai/webkvm-chinese/releases/latest" 2>/dev/null | grep -o '"tag_name": *"[^"]*"' | head -1 | cut -d'"' -f4 || true)
   fi
   if [[ ! "${UPDATE_REF}" =~ ^[A-Za-z0-9._-]+$ ]]; then
     log "WARNING: could not determine a release tag for update.sh; not downloading it from a moving branch"
     UPDATE_REF=""
   fi
-  UPDATE_RAW_URL="https://raw.githubusercontent.com/Slaker19/webkvm/${UPDATE_REF}/packaging/standalone/update.sh"
+  UPDATE_RAW_URL="https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/${UPDATE_REF}/packaging/standalone/update.sh"
   PROXIED_UPDATE_URL="$(gh_proxy_url "${UPDATE_RAW_URL}")"
   if [[ -n "${UPDATE_REF}" ]] && curl --fail --silent --location --retry 3 --proto '=https' --tlsv1.2 \
       "${PROXIED_UPDATE_URL}" \

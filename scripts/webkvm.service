@@ -1,6 +1,6 @@
 [Unit]
 Description=WebKVM Backend (libvirt management + embedded Svelte frontend)
-Documentation=https://github.com/Slaker19/webkvm
+Documentation=https://github.com/shigeyumunaodai/webkvm-chinese
 After=libvirtd.service virtlogd.service network-online.target local-fs.target remote-fs.target
 Wants=libvirtd.service virtlogd.service network-online.target
 

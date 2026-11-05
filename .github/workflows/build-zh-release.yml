@@ -66,9 +66,14 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            # zh-v0.1.10 -> 0.1.10 (the v0.x tag naming stays compatible with
+            # install.sh/update.sh release asset discovery)
             VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#zh-v}"
+            VERSION="${VERSION#v}"
           else
-            VERSION="0.1.9-zh-${GITHUB_SHA::7}"
+            BASE_VERSION="$(node -p "require('./frontend/package.json').version")"
+            VERSION="${BASE_VERSION}-zh-${GITHUB_SHA::7}"
           fi
           BARE="${VERSION#v}"
           BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -126,16 +131,32 @@ jobs:
           name: WebKVM zh ${{ steps.build.outputs.version }}
           generate_release_notes: true
           body: |
-            Simplified-Chinese localized WebKVM build from the `webkvm-zh` fork.
+            Simplified-Chinese localized WebKVM build from
+            [`shigeyumunaodai/webkvm-chinese`](https://github.com/shigeyumunaodai/webkvm-chinese).
 
             - Version: `${{ steps.build.outputs.version }}`
-            - Upstream baseline: `${{ github.sha }}`
-            - Frontend: zh locale 3797 keys (embedded in the single Go binary)
-            - Install: download the tarball, verify `SHA256SUMS`, extract and run
-              `sudo WEBKVM_BINARY=backend/webkvm bash packaging/standalone/install.sh --yes`
+            - Built from commit: `${{ github.sha }}`
+            - Frontend: complete `zh` locale embedded in the single Go binary
+            - Assets: `webkvm-<version>-linux_amd64`, `webkvm-cli-<version>-linux_amd64`,
+              `webkvm-<version>-linux_amd64.tar.gz`, `SHA256SUMS`
 
-            In mainland China, prefix GitHub release URLs with
-            `https://gh-proxy.com/` (or use the installer's `--github-proxy`).
+            **Native install (from this tarball):**
+
+            ```bash
+            sha256sum --check SHA256SUMS
+            mkdir -p webkvm-<version> && tar xzf webkvm-<version>-linux_amd64.tar.gz -C webkvm-<version>
+            cd webkvm-<version>
+            sudo WEBKVM_BINARY=backend/webkvm bash packaging/standalone/install.sh --yes
+            ```
+
+            **One-liner installer:**
+
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
+            ```
+
+            In mainland China, prefix GitHub URLs with `https://gh-proxy.com/`
+            (or use the installer's `--github-proxy`).
           files: |
             dist/*.tar.gz
             dist/SHA256SUMS

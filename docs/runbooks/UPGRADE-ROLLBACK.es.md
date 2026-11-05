@@ -34,9 +34,9 @@ registros de auditoría**.
    ```bash
    VERSION=v0.0.1
    curl -fsSL -o /tmp/webkvm-$VERSION.tar.gz \
-     https://github.com/Slaker19/webkvm/releases/download/$VERSION/webkvm-$VERSION.tar.gz
+     https://github.com/shigeyumunaodai/webkvm-chinese/releases/download/$VERSION/webkvm-$VERSION.tar.gz
    curl -fsSL -o /tmp/SHA256SUMS \
-     https://github.com/Slaker19/webkvm/releases/download/$VERSION/SHA256SUMS
+     https://github.com/shigeyumunaodai/webkvm-chinese/releases/download/$VERSION/SHA256SUMS
    cd /tmp
    sha256sum -c SHA256SUMS --ignore-missing webkvm-$VERSION.tar.gz
    ```

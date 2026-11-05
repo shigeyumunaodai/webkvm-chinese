@@ -17,7 +17,7 @@ WebKVM 首先是**原生**应用（见 [INSTALLATION.md](INSTALLATION.md)）；�
 全新服务器上一行命令——缺少 libvirt/QEMU 与 Docker 时会自动安装，然后部署已发布的镜像：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
 ```
 
 或者，从本仓库的检出目录运行：

@@ -17,7 +17,7 @@ description: |-
   Single binary serving VMs, containers (Incus), storage, networks, backups
   and nftables firewall from one HTTPS UI. Runs as a systemd service.
 vendor: WebKVM
-homepage: https://github.com/Slaker19/webkvm
+homepage: https://github.com/shigeyumunaodai/webkvm-chinese
 license: SEE LICENSE IN LICENSE
 contents:
   - src: ./backend/webkvm

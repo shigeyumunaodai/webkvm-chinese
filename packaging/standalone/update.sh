@@ -142,7 +142,7 @@ else
   # install.sh's own fallback trusts) so the downloaded binary can
   # actually be checksum-verified before it's installed and run as root.
   TMP="$(mktemp /tmp/webkvm-update.XXXXXX)"  # removed by the EXIT trap
-  RELEASE_API="https://api.github.com/repos/Slaker19/webkvm/releases/latest"
+  RELEASE_API="https://api.github.com/repos/shigeyumunaodai/webkvm-chinese/releases/latest"
   # Raw binary asset published by `make dist`/`make release`
   # (dist/webkvm-<version>-linux_amd64). The tarball is NOT used here:
   # this script installs a binary, and installing a .tar.gz as the
@@ -169,7 +169,7 @@ else
     # No GitHub release with SHA256SUMS: there is nothing verifiable to
     # fetch (no binary is committed to git). Fail closed — this binary
     # runs as root.
-    die "no GitHub release with SHA256SUMS found for Slaker19/webkvm. Update from a checkout with --source, or reinstall with install.sh WEBKVM_BINARY=<path>."
+    die "no GitHub release with SHA256SUMS found for shigeyumunaodai/webkvm-chinese. Update from a checkout with --source, or reinstall with install.sh WEBKVM_BINARY=<path>."
   fi
   INSTALL_SRC="${TMP}"
 fi

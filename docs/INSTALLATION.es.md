@@ -25,7 +25,7 @@ consulta [USAGE.es.md](USAGE.es.md).
 ### 2. Instalación con un solo comando
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 # pregunta: solo IP (HTTP) o con SSL — el certificado autofirmado sirve para IP y dominio
 # + dominio opcional (p. ej. webkvm.example.com) + modo de red (nat / bridge / both)
 ```
@@ -38,7 +38,7 @@ trabajo se conserva para que puedas adjuntarlo a un informe de error.
 O desde un clon del repositorio:
 
 ```bash
-git clone https://github.com/Slaker19/webkvm
+git clone https://github.com/shigeyumunaodai/webkvm-chinese
 cd webkvm
 sudo ./install.sh              # delega en packaging/standalone/install.sh
 sudo ./packaging/standalone/install.sh --dry-run   # comprueba sin tocar nada

@@ -24,7 +24,7 @@
 ### 2. 一键安装
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 # 会询问：仅 IP（HTTP）还是启用 SSL —— 自签名证书对 IP 和域名均有效
 # + 可选域名（例如 webkvm.example.com）+ 网络模式（nat / bridge / both）
 ```
@@ -35,7 +35,7 @@ curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/instal
 或从克隆的仓库安装：
 
 ```bash
-git clone https://github.com/Slaker19/webkvm
+git clone https://github.com/shigeyumunaodai/webkvm-chinese
 cd webkvm
 sudo ./install.sh              # 委托给 packaging/standalone/install.sh
 sudo ./packaging/standalone/install.sh --dry-run   # 不做任何改动地验证

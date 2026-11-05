@@ -17,6 +17,10 @@
 #   cd /opt/webkvm-repo && git fetch --tags && git checkout <new-tag> && docker compose pull && docker compose up -d
 set -Eeuo pipefail
 
+# NOTE: this Docker path still pulls the upstream English image
+# (slaker1908/webkvm). For the Chinese UI use scripts/install-webkvm.sh or a
+# release tarball from this fork, or build the image from this checkout.
+
 REPO_URL="${WEBKVM_INSTALL_REPO:-https://github.com/Slaker19/webkvm}"
 # WEBKVM_INSTALL_BRANCH is kept as a legacy alias for WEBKVM_INSTALL_REF.
 BRANCH="${WEBKVM_INSTALL_REF:-${WEBKVM_INSTALL_BRANCH:-}}"

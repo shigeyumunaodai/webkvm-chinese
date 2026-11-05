@@ -132,8 +132,8 @@ ss -ltn 'sport = :8080' || true
 # 预期：无输出（即端口空闲）
 
 # 9) 出网情况（在线安装必需）
-curl -sI -m 10 https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | head -1
-curl -sI -m 10 https://api.github.com/repos/Slaker19/webkvm/releases/latest | head -1
+curl -sI -m 10 https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | head -1
+curl -sI -m 10 https://api.github.com/repos/shigeyumunaodai/webkvm-chinese/releases/latest | head -1
 # 预期：HTTP/2 200（国内网络超时见第 3 节与 CHINA-NETWORK.md）
 ```
 
@@ -175,7 +175,7 @@ sudo bash packaging/standalone/install.sh \
 > 一键脚本 `scripts/install-webkvm.sh` 会把 `WEBKVM_CN_MIRRORS` / `WEBKVM_CN_COMPONENTS` / `WEBKVM_GH_PROXY` 透传给独立安装器（作为对应命令行参数），并支持用 `WEBKVM_INSTALL_TARBALL_URL` 直接指定源码 tarball（http(s) 直链或本地文件路径）。例如：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
 sudo WEBKVM_CN_MIRRORS=auto \
      WEBKVM_CN_COMPONENTS=os,pip,npm,go,docker \
      WEBKVM_GH_PROXY=https://ghfast.top/ \
@@ -186,10 +186,10 @@ sudo WEBKVM_CN_MIRRORS=auto \
 
 | 用途 | 原始地址 | 加速思路 |
 |---|---|---|
-| 克隆仓库 | `https://github.com/Slaker19/webkvm.git` | 使用代理前缀：`https://ghfast.top/https://github.com/Slaker19/webkvm.git`；或配置 `git config --global url."https://ghfast.top/https://github.com/".insteadOf "https://github.com/"`（`--components=git` + `--github-proxy` 会自动写入）。 |
-| 源码 tarball | `https://github.com/Slaker19/webkvm/archive/refs/heads/main.tar.gz` | 同样加代理前缀，或用 `WEBKVM_INSTALL_TARBALL_URL` 指向已缓存/内网地址（也支持本地 tarball 文件路径）。 |
-| release 资产 | `https://github.com/Slaker19/webkvm/releases/download/<tag>/webkvm-<ver>-linux_amd64` | 浏览器/下载器加速，或用 `WEBKVM_BINARY_URL` + `WEBKVM_BINARY_SHA256` 指向国内对象存储镜像。 |
-| 最新 release API | `https://api.github.com/repos/Slaker19/webkvm/releases/latest` | **不走**代理前缀；不可达时改用 `WEBKVM_BINARY_URL`，或用 `WEBKVM_UPDATE_REF=<tag>` 指定已知 release tag。 |
+| 克隆仓库 | `https://github.com/shigeyumunaodai/webkvm-chinese.git` | 使用代理前缀：`https://ghfast.top/https://github.com/shigeyumunaodai/webkvm-chinese.git`；或配置 `git config --global url."https://ghfast.top/https://github.com/".insteadOf "https://github.com/"`（`--components=git` + `--github-proxy` 会自动写入）。 |
+| 源码 tarball | `https://github.com/shigeyumunaodai/webkvm-chinese/archive/refs/heads/main.tar.gz` | 同样加代理前缀，或用 `WEBKVM_INSTALL_TARBALL_URL` 指向已缓存/内网地址（也支持本地 tarball 文件路径）。 |
+| release 资产 | `https://github.com/shigeyumunaodai/webkvm-chinese/releases/download/<tag>/webkvm-<ver>-linux_amd64` | 浏览器/下载器加速，或用 `WEBKVM_BINARY_URL` + `WEBKVM_BINARY_SHA256` 指向国内对象存储镜像。 |
+| 最新 release API | `https://api.github.com/repos/shigeyumunaodai/webkvm-chinese/releases/latest` | **不走**代理前缀；不可达时改用 `WEBKVM_BINARY_URL`，或用 `WEBKVM_UPDATE_REF=<tag>` 指定已知 release tag。 |
 
 > 加速地址的可用性会随时间变化，`CHINA-NETWORK.md` 给出自检方法与“避免硬编码”的注意事项；本文不写死某个代理域名，示例仅为格式演示。安装器对通过代理下载的二进制/ release tarball 仍强制 SHA-256 校验（校验和来自官方 `SHA256SUMS`）。
 
@@ -202,8 +202,8 @@ sudo dnf makecache             # Fedora/RHEL
 sudo pacman -Sy                # Arch
 
 # GitHub 与 release API 是否可达
-curl -sI -m 10 https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | head -1
-curl -sI -m 10 https://api.github.com/repos/Slaker19/webkvm/releases/latest | head -1
+curl -sI -m 10 https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | head -1
+curl -sI -m 10 https://api.github.com/repos/shigeyumunaodai/webkvm-chinese/releases/latest | head -1
 
 # Docker 镜像仓库是否可达（可选）
 docker pull hello-world
@@ -223,7 +223,7 @@ docker pull hello-world
 
 ```bash
 # 管道执行 = 全无人值守（全部使用默认值）
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 ```
 
 该脚本会：
@@ -234,7 +234,7 @@ curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/instal
 若希望**交互式**选择 HTTPS / 网卡 / 网络模式，请先下载再执行（stdin 是终端时安装器会逐项询问）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
 sudo bash /tmp/webkvm-install.sh
 ```
 
@@ -276,7 +276,7 @@ sudo bash /tmp/webkvm-install.sh 2>&1 | sudo tee -a /var/log/webkvm-install.log
 **前提**：同方式一，另外需要 `git`（可选，没有 git 也能用 tarball）。
 
 ```bash
-git clone https://github.com/Slaker19/webkvm.git
+git clone https://github.com/shigeyumunaodai/webkvm-chinese.git
 cd webkvm
 
 # 完整安装（交互式；会先做前置检查）
@@ -352,7 +352,7 @@ sudo WEBKVM_BINARY_URL=https://your-server.example.com/webkvm-<version>-linux_am
 **一键（脚本代装宿主 libvirt + Docker，再部署容器）**：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh
 sudo bash /tmp/webkvm-docker-install.sh
 ```
 
@@ -1015,7 +1015,7 @@ sudo git pull
 sudo ./packaging/standalone/install.sh
 
 # 或直接重跑一键脚本（会更新 /opt/webkvm/source 后安装）
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 ```
 
 安装器升级流程：

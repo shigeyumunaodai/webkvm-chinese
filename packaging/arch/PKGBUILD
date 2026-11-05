@@ -8,7 +8,7 @@ pkgver=${_pkgver}
 pkgrel=1
 pkgdesc="Native libvirt+QEMU/KVM manager — Go backend with embedded Svelte UI (precompiled)"
 arch=('x86_64')
-url="https://github.com/Slaker19/webkvm"
+url="https://github.com/shigeyumunaodai/webkvm-chinese"
 license=('SEE LICENSE IN LICENSE')
 depends=('ca-certificates' 'curl' 'openssl' 'libisoburn' 'xz' 'libvirt' 'qemu-full'
          'qemu-img' 'swtpm' 'edk2-ovmf' 'python' 'iproute2' 'procps-ng' 'util-linux'
@@ -21,7 +21,7 @@ provides=('webkvm')
 conflicts=('webkvm')
 backup=('etc/default/webkvm')
 install=webkvm-bin.install
-source=("https://github.com/Slaker19/webkvm/releases/download/v0.0.1/webkvm-0.0.1.tar.gz")
+source=("https://github.com/shigeyumunaodai/webkvm-chinese/releases/download/v0.0.1/webkvm-0.0.1.tar.gz")
 # Published release tarball hash goes here (updpkgsums after `make dist`
 # from the tagged tree, or when the release is cut):
 sha256sums=('SKIP')

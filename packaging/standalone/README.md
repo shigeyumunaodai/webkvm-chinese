@@ -6,7 +6,7 @@ Este directorio instala `webkvm` como gestor independiente en **Debian/Ubuntu (a
 ## Instalación desde cero (one-liner)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 ```
 
 El script clona el repositorio, detecta la distro, instala las dependencias **runtime**

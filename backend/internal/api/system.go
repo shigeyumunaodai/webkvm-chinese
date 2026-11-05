@@ -990,7 +990,7 @@ func tailFile(path string, n int) ([]byte, error) {
 // latestReleaseAPI is the GitHub endpoint for the newest published
 // release. Keep it in sync with RELEASE_API in packaging/standalone/
 // install.sh and update.sh.
-const latestReleaseAPI = "https://api.github.com/repos/Slaker19/webkvm/releases/latest"
+const latestReleaseAPI = "https://api.github.com/repos/shigeyumunaodai/webkvm-chinese/releases/latest"
 
 // checkLatestVersion asks the GitHub API for the latest release. It is
 // best-effort and never blocks the response for more than ~2s.
@@ -1017,7 +1017,8 @@ func checkLatestVersion(ctx context.Context, _ string) (string, bool) {
 	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
 		return "", false
 	}
-	return strings.TrimPrefix(body.TagName, "v"), true
+	tag := strings.TrimPrefix(body.TagName, "zh-v")
+	return strings.TrimPrefix(tag, "v"), true
 }
 
 // isNewer returns true when `latest` is a higher semver than `current`.

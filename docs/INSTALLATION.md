@@ -25,7 +25,7 @@ Single document covering **installation** of the WebKVM manager and the
 ### 2. One-command install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 # it asks: IP only (HTTP) vs With SSL — self-signed cert works for IP + domain
 # + optional domain (e.g. webkvm.example.com) + network mode (nat / bridge / both)
 ```
@@ -38,7 +38,7 @@ directory is kept so you can attach it to a bug report.
 Or from a clone:
 
 ```bash
-git clone https://github.com/Slaker19/webkvm
+git clone https://github.com/shigeyumunaodai/webkvm-chinese
 cd webkvm
 sudo ./install.sh              # delegates to packaging/standalone/install.sh
 sudo ./packaging/standalone/install.sh --dry-run   # verify without touching anything

@@ -4,7 +4,7 @@
 
 **面向 Linux 的轻量级单二进制原生虚拟机与容器管理器**
 
-[![CI Status](https://github.com/Slaker19/webkvm/actions/workflows/ci.yml/badge.svg)](https://github.com/Slaker19/webkvm/actions/workflows/ci.yml)
+[![CI Status](https://github.com/shigeyumunaodai/webkvm-chinese/actions/workflows/ci.yml/badge.svg)](https://github.com/shigeyumunaodai/webkvm-chinese/actions/workflows/ci.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.26-00ADD8?style=flat&logo=go)](https://golang.org)
 [![Svelte Version](https://img.shields.io/badge/Svelte-5_Runes-FF3E00?style=flat&logo=svelte)](https://svelte.dev)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com)
@@ -14,6 +14,8 @@
 [**English**](README.md) • [**Español**](README.es.md) • [**简体中文**](README.zh.md) • [**中文文档**](docs/zh/README.md)
 
 </div>
+
+> **简体中文汉化版仓库说明：** 本仓库 [`webkvm-chinese`](https://github.com/shigeyumunaodai/webkvm-chinese) 是 [Slaker19/webkvm](https://github.com/Slaker19/webkvm) 的汉化 fork，内置完整 `zh` 中文界面、中文文档、国内网络镜像工具，并提供编译好的 Linux Release。上游更新会自动合并并保留汉化，维护方式见 [docs/zh/GITHUB-SYNC.md](docs/zh/GITHUB-SYNC.md)。
 
 ---
 
@@ -67,7 +69,7 @@ WebKVM 使用 **Go** 编写，通过 CGO 绑定 `libvirt`，并内嵌 **Svelte 5
 在服务器上以 root 身份运行无人值守安装器：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 ```
 
 安装器会自动检测包管理器（`apt`、`dnf`、`pacman`），安装所需的虚拟化软件包（`qemu-kvm`、`libvirt-daemon-system`），配置双网桥 / NAT 网络，生成 TLS 证书，并注册 `webkvm.service` systemd 服务单元。
@@ -78,14 +80,35 @@ curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/instal
 
 > 提示：安装器默认只监听 `127.0.0.1`（仅本机）。要从局域网访问，请在安装时把 Bind address 改为 `0.0.0.0` 或服务器 LAN IP（务必配合 HTTPS），或参见[《完整中文部署说明》](docs/zh/DEPLOYMENT.md)。
 
+
+### 中文版 Release 下载（推荐局域网 / 离线宿主机）
+
+推送 `zh-v*` tag 时会自动发布可直接安装的 tarball、原始二进制和 `SHA256SUMS`：
+
+- Release 页面：<https://github.com/shigeyumunaodai/webkvm-chinese/releases/latest>
+- 国内加速：在 GitHub 链接前加 `https://gh-proxy.com/`
+
+```bash
+# 从 Release 页面下载 tarball 与 SHA256SUMS 后：
+sha256sum --check SHA256SUMS
+mkdir -p webkvm-<版本> && tar xzf webkvm-<版本>-linux_amd64.tar.gz -C webkvm-<版本>
+cd webkvm-<版本>
+sudo WEBKVM_BINARY=backend/webkvm bash packaging/standalone/install.sh --yes
+```
+
+如果服务器无法访问 GitHub，把 tarball 拷进去执行同样的 `WEBKVM_BINARY=`
+安装命令即可；安装器默认不联网下载二进制，也不会在服务器上编译。
+
 ### Docker 安装
 
 如果你更愿意让 WebKVM 以容器方式连接宿主机的 libvirt socket：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
 ```
 *（自定义卷挂载与安全权限说明见 [docs/zh/DOCKER.md](docs/zh/DOCKER.md)。）*
+
+> **注意：** 当前 Docker 镜像（`slaker1908/webkvm`）仍是上游英文界面。需要中文界面请使用上面的原生 / Release 安装方式，或在本仓库执行 `docker compose build` 自行构建。
 
 ---
 
@@ -194,7 +217,7 @@ webkvm-cli --json vms list | jq '.[] | select(.state=="running") | .name'
 
 ```bash
 # 克隆仓库
-git clone https://github.com/Slaker19/webkvm.git
+git clone https://github.com/shigeyumunaodai/webkvm-chinese.git
 cd webkvm
 
 # 构建完整单二进制（编译 Svelte 前端并嵌入 backend/webkvm）

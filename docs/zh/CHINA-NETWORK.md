@@ -216,7 +216,7 @@ sudo bash packaging/standalone/install.sh --dry-run --cn-mirrors=auto
 
 ```bash
 # 下载后执行（推荐，便于先审查脚本）
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
 sudo WEBKVM_CN_MIRRORS=auto \
      WEBKVM_CN_COMPONENTS=os,pip,npm,go,docker \
      WEBKVM_GH_PROXY=https://<加速前缀>/ \
@@ -323,8 +323,8 @@ WebKVM 安装/升级涉及三类 GitHub 下载资源（另有 release API 查询
 ### 5.1 源码 tarball（一键脚本）
 
 ```text
-原始：https://github.com/Slaker19/webkvm/archive/refs/heads/main.tar.gz
-加速：https://<加速前缀>/https://github.com/Slaker19/webkvm/archive/refs/heads/main.tar.gz
+原始：https://github.com/shigeyumunaodai/webkvm-chinese/archive/refs/heads/main.tar.gz
+加速：https://<加速前缀>/https://github.com/shigeyumunaodai/webkvm-chinese/archive/refs/heads/main.tar.gz
 ```
 
 一键脚本可通过 `WEBKVM_INSTALL_TARBALL_URL` 直接指定下载地址（可以是加速地址、内网对象存储地址，或**本地文件路径**）：
@@ -342,7 +342,7 @@ sudo WEBKVM_INSTALL_TARBALL_URL=/root/webkvm-main.tar.gz bash /tmp/webkvm-instal
 
 ```bash
 # 方式一：给克隆 URL 加前缀
-git clone --depth 1 https://<加速前缀>/https://github.com/Slaker19/webkvm.git
+git clone --depth 1 https://<加速前缀>/https://github.com/shigeyumunaodai/webkvm-chinese.git
 
 # 方式二：配置全局 URL 重写（对后续所有 github.com 克隆生效）
 git config --global url."https://<加速前缀>/https://github.com/".insteadOf "https://github.com/"
@@ -361,8 +361,8 @@ git config --global --unset-all url."https://<加速前缀>/https://raw.githubus
 ### 5.3 release 资产（预编译二进制）
 
 ```text
-原始：https://github.com/Slaker19/webkvm/releases/download/<tag>/webkvm-<version>-linux_amd64
-校验：https://github.com/Slaker19/webkvm/releases/download/<tag>/SHA256SUMS
+原始：https://github.com/shigeyumunaodai/webkvm-chinese/releases/download/<tag>/webkvm-<version>-linux_amd64
+校验：https://github.com/shigeyumunaodai/webkvm-chinese/releases/download/<tag>/SHA256SUMS
 ```
 
 下载后**必须**校验：

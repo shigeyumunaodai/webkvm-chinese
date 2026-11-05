@@ -36,7 +36,7 @@ Una sola línea, desde un servidor recién instalado — instala libvirt/QEMU y
 Docker si faltan, y después despliega la imagen publicada:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
 ```
 
 O bien, desde una copia de este repositorio:

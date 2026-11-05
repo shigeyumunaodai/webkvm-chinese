@@ -3,13 +3,13 @@
 # from there (native systemd install; never compiles on the target server).
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh && sudo bash /tmp/webkvm-install.sh
+#   curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh && sudo bash /tmp/webkvm-install.sh
 #
 # After install, update anytime with:
 #   cd /opt/webkvm-repo && git pull && sudo ./packaging/standalone/install.sh
 #
 # Environment variables (piped-friendly: no extra prompts are added):
-#   WEBKVM_INSTALL_REPO=/repo.git     git repo URL (default: Slaker19/webkvm)
+#   WEBKVM_INSTALL_REPO=/repo.git     git repo URL (default: shigeyumunaodai/webkvm-chinese)
 #   WEBKVM_INSTALL_BRANCH=main        branch to install
 #   WEBKVM_INSTALL_TARBALL_URL=URL    install from a direct source tarball
 #                                     (http(s):// URL or a local file path)
@@ -31,14 +31,14 @@
 #   WEBKVM_INSTALL_LOG=/var/log/webkvm-install.log   installer log file
 #
 # Mainland-China examples (mirrors + GitHub accelerator):
-#   curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
+#   curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh -o /tmp/webkvm-install.sh
 #   sudo WEBKVM_GH_PROXY=https://ghfast.top/ WEBKVM_CN_MIRRORS=auto bash /tmp/webkvm-install.sh
 #
 #   # Offline / mirror-hosted source tarball (no git access needed):
 #   sudo WEBKVM_INSTALL_TARBALL_URL=https://mirror.example.com/webkvm-main.tar.gz bash /tmp/webkvm-install.sh
 set -Eeuo pipefail
 
-REPO_URL="${WEBKVM_INSTALL_REPO:-https://github.com/Slaker19/webkvm}"
+REPO_URL="${WEBKVM_INSTALL_REPO:-https://github.com/shigeyumunaodai/webkvm-chinese}"
 BRANCH="${WEBKVM_INSTALL_BRANCH:-main}"
 # Canonical persistent repo location: /opt/webkvm/source (mirrored by update.sh and webkvm.service)
 # Fallback support: if /opt/webkvm-repo already exists from older installs, honor it.

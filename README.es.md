@@ -4,7 +4,7 @@
 
 **Gestor Nativo y Ultra-Ligero de Máquinas Virtuales y Contenedores para Linux (Binario Único)**
 
-[![CI Status](https://github.com/Slaker19/webkvm/actions/workflows/ci.yml/badge.svg)](https://github.com/Slaker19/webkvm/actions/workflows/ci.yml)
+[![CI Status](https://github.com/shigeyumunaodai/webkvm-chinese/actions/workflows/ci.yml/badge.svg)](https://github.com/shigeyumunaodai/webkvm-chinese/actions/workflows/ci.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.26-00ADD8?style=flat&logo=go)](https://golang.org)
 [![Svelte Version](https://img.shields.io/badge/Svelte-5_Runes-FF3E00?style=flat&logo=svelte)](https://svelte.dev)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com)
@@ -67,7 +67,7 @@ Desarrollado en **Go** con enlaces nativos CGO a `libvirt` y una interfaz web SP
 Ejecuta el instalador desatendido como root en tu servidor:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 ```
 
 El instalador detecta automáticamente el gestor de paquetes (`apt`, `dnf`, `pacman`), instala los componentes de virtualización necesarios (`qemu-kvm`, `libvirt-daemon-system`), configura la red dual (Bridge LAN + NAT Aislado), genera los certificados TLS y activa el servicio `webkvm.service` en systemd.
@@ -84,7 +84,7 @@ El instalador detecta automáticamente el gestor de paquetes (`apt`, `dnf`, `pac
 Si prefieres ejecutar WebKVM en un contenedor frente al socket libvirt del host:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
 ```
 *(Consulta [docs/DOCKER.es.md](docs/DOCKER.es.md) para volúmenes y configuración detallada).*
 
@@ -192,7 +192,7 @@ Requisitos previos: Go ≥ 1.26, Node.js ≥ 20, `libvirt-dev`, `gcc`.
 
 ```bash
 # Clona el repositorio
-git clone https://github.com/Slaker19/webkvm.git
+git clone https://github.com/shigeyumunaodai/webkvm-chinese.git
 cd webkvm
 
 # Compila el binario único completo (compila el frontend Svelte y lo

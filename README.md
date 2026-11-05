@@ -4,7 +4,7 @@
 
 **Lightweight, Single-Binary Native Virtual Machine & Container Manager for Linux**
 
-[![CI Status](https://github.com/Slaker19/webkvm/actions/workflows/ci.yml/badge.svg)](https://github.com/Slaker19/webkvm/actions/workflows/ci.yml)
+[![CI Status](https://github.com/shigeyumunaodai/webkvm-chinese/actions/workflows/ci.yml/badge.svg)](https://github.com/shigeyumunaodai/webkvm-chinese/actions/workflows/ci.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.26-00ADD8?style=flat&logo=go)](https://golang.org)
 [![Svelte Version](https://img.shields.io/badge/Svelte-5_Runes-FF3E00?style=flat&logo=svelte)](https://svelte.dev)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com)
@@ -14,6 +14,8 @@
 [**English**](README.md) • [**Español**](README.es.md) • [**简体中文**](README.zh.md) • [**Documentation**](docs/USAGE.md) • [**FAQ**](docs/FAQ.md) • [**CLI Guide**](docs/CLI.md) • [**API Reference**](docs/API.md)
 
 </div>
+
+> **Simplified-Chinese fork.** This repository ([`webkvm-chinese`](https://github.com/shigeyumunaodai/webkvm-chinese)) is a localization-friendly fork of [Slaker19/webkvm](https://github.com/Slaker19/webkvm). It ships a complete `zh` UI locale, Chinese documentation, mainland-China mirror tooling and prebuilt Linux releases. Upstream changes are merged automatically while preserving the localization — see [docs/zh/GITHUB-SYNC.md](docs/zh/GITHUB-SYNC.md).
 
 ---
 
@@ -67,7 +69,7 @@ Built in **Go** with CGO bindings to `libvirt` and an embedded **Svelte 5** sing
 Run the unattended installer on your server as root:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-webkvm.sh | sudo bash
 ```
 
 The installer auto-detects your package manager (`apt`, `dnf`, `pacman`), installs required virtualization packages (`qemu-kvm`, `libvirt-daemon-system`), configures dual bridge/NAT networking, generates TLS certificates, and registers the `webkvm.service` systemd unit.
@@ -79,14 +81,35 @@ The installer auto-detects your package manager (`apt`, `dnf`, `pacman`), instal
     proxy in front. See [docs/zh/DEPLOYMENT.md](docs/zh/DEPLOYMENT.md) for details.
 - Initial credentials are displayed at the end of the installation and stored at `/opt/webkvm/admin-password.initial`.
 
+
+### Prebuilt Chinese release (recommended for LAN / offline hosts)
+
+Tagged releases (`zh-v*`) publish a ready-to-install tarball, the raw binaries and `SHA256SUMS`:
+
+- Release page: <https://github.com/shigeyumunaodai/webkvm-chinese/releases/latest>
+- Mainland China: prefix the GitHub URL with `https://gh-proxy.com/`
+
+```bash
+# Download the tarball + SHA256SUMS from the release page, then:
+sha256sum --check SHA256SUMS
+mkdir -p webkvm-<version> && tar xzf webkvm-<version>-linux_amd64.tar.gz -C webkvm-<version>
+cd webkvm-<version>
+sudo WEBKVM_BINARY=backend/webkvm bash packaging/standalone/install.sh --yes
+```
+
+If the server has no GitHub access, copy the tarball over and use the same
+`WEBKVM_BINARY=` install command; the server never compiles anything.
+
 ### Docker Install
 
 If you prefer running WebKVM in a container against your host's libvirt socket:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
+curl -fsSL https://raw.githubusercontent.com/shigeyumunaodai/webkvm-chinese/main/scripts/install-docker.sh -o /tmp/webkvm-docker-install.sh && sudo bash /tmp/webkvm-docker-install.sh
 ```
-*(See [docs/DOCKER.md](docs/DOCKER.md) for custom volume mounts and security privileges).*
+*(See [docs/DOCKER.md](docs/DOCKER.md) for custom volume mounts and security privileges.)*
+
+> **Note:** the published Docker image (`slaker1908/webkvm`) still uses the upstream English UI. For the Chinese UI use the native/Release installation above, or build the image from this repository (`docker compose build`).
 
 ---
 
@@ -192,7 +215,7 @@ Prerequisites: Go ≥ 1.26, Node.js ≥ 20, `libvirt-dev`, `gcc`.
 
 ```bash
 # Clone the repository
-git clone https://github.com/Slaker19/webkvm.git
+git clone https://github.com/shigeyumunaodai/webkvm-chinese.git
 cd webkvm
 
 # Build complete single binary (compiles Svelte frontend and embeds into backend/webkvm)
