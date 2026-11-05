@@ -52,7 +52,7 @@ COPY backend/ ./
 # Copy compiled frontend assets from Stage 1 into backend embedded FS
 COPY --from=frontend-builder /src/frontend/dist ./internal/frontend/dist
 
-ARG VERSION=0.1.9
+ARG VERSION=0.1.10
 RUN CGO_ENABLED=1 go build -ldflags="-s -w -X main.Version=${VERSION}" -o /out/webkvm ./cmd/server && \
     CGO_ENABLED=0 go build -ldflags="-s -w -X main.Version=${VERSION}" -o /out/webkvm-cli ./cmd/cli
 
@@ -63,7 +63,7 @@ FROM ubuntu:24.04
 
 # Runtime dependencies: client-side tools required for libvirt, storage,
 # networking and system operations.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
       ca-certificates \
       curl \
       openssl \
@@ -90,6 +90,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       f2fs-tools \
       mdadm \
       zfsutils-linux \
+      smartmontools \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=backend-builder /out/webkvm /usr/local/bin/webkvm

@@ -42,7 +42,7 @@ import (
 
 // Set by -ldflags at build time. Defaults are used for `go run`.
 var (
-	Version   = "0.1.9"
+	Version   = "0.1.10"
 	BuildTime = "unknown"
 )
 
@@ -868,6 +868,16 @@ func main() {
 	}
 	go jail.Janitor(eventCtx)
 	go jail.StartSSHWatcher(eventCtx)
+
+	// S.M.A.R.T. background health watcher
+	var smartAlertFn smart.AlertFunc
+	if notifier != nil {
+		smartAlertFn = func(level, subject, msg string) {
+			notifier.Record(level, subject, msg)
+		}
+	}
+	smartWatcher := smart.NewWatcher(24*time.Hour, smartAlertFn, logger)
+	smartWatcher.Start(eventCtx)
 
 	router := api.NewRouter(cfg, lv, computeBackend, authMgr, globalRateLimiter, loginLimiter, jail, userStore, hub, metrics, hostMetrics, auditLogger, settingsStore, tokensStore, nodesReg, backupStore, backupRunner, notifier, fwStore, fwMgr, vmSchedStore, vmScheduler, metricHist, alerter, incusMetrics)
 

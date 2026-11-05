@@ -228,7 +228,7 @@ curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/instal
 
 该脚本会：
 
-1. 把仓库克隆（无 git 时下载 tarball）到 **`/opt/webkvm-repo`**；
+1. 把仓库克隆（无 git 时下载 tarball）到 **`/opt/webkvm/source`**（旧版安装可能仍为 `/opt/webkvm-repo`，脚本会自动兼容）；
 2. 调用 `packaging/standalone/install.sh` 完成真正的安装。
 
 若希望**交互式**选择 HTTPS / 网卡 / 网络模式，请先下载再执行（stdin 是终端时安装器会逐项询问）：
@@ -717,7 +717,7 @@ cat /etc/webkvm/vmbr1-dnsmasq.conf
 ### 7.5 修改或重建网络
 
 - **重跑安装器**：`sudo ./packaging/standalone/install.sh --network=both`（会重新执行 `scripts/setup-network.sh`，幂等）。
-- **单独执行网络脚本**（仓库路径：一键安装为 `/opt/webkvm-repo`，克隆安装为仓库根目录）：
+- **单独执行网络脚本**（仓库路径：一键安装为 `/opt/webkvm/source`，旧版为 `/opt/webkvm-repo`；克隆安装为仓库根目录）：
 
 ```bash
 # 仅预览会做什么，不修改系统
@@ -1010,11 +1010,11 @@ WebKVM 的备份归档**本身不做加密**（机密字段不会进入配置备
 
 ```bash
 # 一键脚本装法：先更新仓库再重跑安装器
-cd /opt/webkvm-repo
+cd /opt/webkvm/source
 sudo git pull
 sudo ./packaging/standalone/install.sh
 
-# 或直接重跑一键脚本（会更新 /opt/webkvm-repo 后安装）
+# 或直接重跑一键脚本（会更新 /opt/webkvm/source 后安装）
 curl -fsSL https://raw.githubusercontent.com/Slaker19/webkvm/main/scripts/install-webkvm.sh | sudo bash
 ```
 
@@ -1074,7 +1074,7 @@ sudo make rollback
 源码仓库中的卸载器位于 `packaging/standalone/uninstall.sh`：
 
 ```bash
-cd /opt/webkvm-repo            # 一键安装；克隆安装则在仓库根目录
+cd /opt/webkvm/source          # 一键安装；旧版为 /opt/webkvm-repo；克隆安装则在仓库根目录
 cd packaging/standalone
 
 # 默认卸载：删除二进制、systemd 单元、update 脚本，保留数据
@@ -1397,7 +1397,7 @@ sudo bash scripts/fix-bridge-port-ip.sh --apply    # 修复
 | `/opt/webkvm/logs/backend.log` | 文件日志（安装器默认启用 `WEBKVM_LOG_FILE`）。 |
 | `/var/log/webkvm-install.log` | 一键安装脚本日志（可用 `WEBKVM_INSTALL_LOG` 覆盖）。 |
 | `/var/log/webkvm-docker-install.log` | Docker 一键安装脚本日志。 |
-| `/opt/webkvm-repo` | 一键脚本克隆的仓库（保留用于后续升级）。 |
+| `/opt/webkvm/source` | 一键脚本克隆的仓库（保留用于后续升级；旧版安装可能为 `/opt/webkvm-repo`）。 |
 
 ### 14.2 环境变量表
 
@@ -1530,7 +1530,7 @@ sudo ./packaging/standalone/uninstall.sh       # 卸载（保留数据）
 本文写作时对照了以下实现文件；若你阅读的文档与运行行为不一致，请以仓库当前实现为准，并欢迎提 issue：
 
 - 安装器：`packaging/standalone/install.sh`（交互项、默认值、健康检查、systemd 单元、防火墙放行、国内换源调用）；
-- 一键脚本：`scripts/install-webkvm.sh`（仓库克隆到 `/opt/webkvm-repo`、日志路径、非交互判定、国内加速透传）；
+- 一键脚本：`scripts/install-webkvm.sh`（仓库克隆到 `/opt/webkvm/source`，兼容旧安装的 `/opt/webkvm-repo`；日志路径、非交互判定、国内加速透传）；
 - 国内换源：`scripts/cn-mirrors.sh`（参数/环境变量/备份恢复行为，详见 [CHINA-NETWORK.md](CHINA-NETWORK.md)）；
 - 卸载/升级：`packaging/standalone/uninstall.sh`、`packaging/standalone/update.sh`；
 - 网络：`scripts/setup-network.sh`（`vmbr0`/`vmbr1`/`dummy0`/dnsmasq/`MASQUERADE`）；

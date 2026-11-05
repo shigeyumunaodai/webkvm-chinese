@@ -20,6 +20,43 @@ Versión en inglés: [CHANGELOG.md](CHANGELOG.md).
 - **Correcciones de documentación detectadas al localizar:** la ayuda del instalador `--bind` indica el valor real por defecto `127.0.0.1` (los README explican cómo exponer en LAN), el modo NAT heredado se documenta como red NAT `default` de libvirt (sin `vmbr1`) y `.env.example` documenta CORS por defecto same-origin (vacío).
 - El tarball de release incluye `scripts/cn-mirrors.sh`.
 
+## [0.1.10] — 2026-11-01
+
+### Añadido
+- **Modo Dual de Vista en VmList**: Alternador entre Vista de Tarjetas y Vista de Tabla compacta empresarial, persistido en preferencias del navegador (`localStorage`).
+- **Copiado Rápido de IP en 1 Clic**: Copia instantánea al portapapeles con confirmación visual de `check` y notificación toast, tanto en tarjetas como en tabla sin salir de la lista.
+- **Preparación para Clustering (Multi-Nodo)**: Badge de nodo (`vm.node`) en tarjetas y filas de tabla, junto con chips de filtrado dinámico por anfitrión de clúster.
+- **Barra Unificada de Filtros Rápidos**: Filtros siempre visibles con contadores en tiempo real por tipo de instancia (Todas, VMs, Contenedores) y estado (En ejecución, Apagadas, Pausadas).
+- **Gestión Flexible de Redes Capa 2 y Capa 3**:
+  - Creación de switches virtuales puros de Capa 2 sin IP requerida en el anfitrión ni dnsmasq (`sin CIDR`), ideal para routers y firewalls virtualizados (pfSense, OPNsense, VyOS) y entornos zero-trust.
+  - Soporte universal para troncales VLAN 802.1Q (`vlan_filtering 1`) en cualquier bridge de Linux, compatible de forma unificada para invitados QEMU/KVM y contenedores Incus/LXC.
+  - Selector de modo de primer nivel en `Networks`: Switch Puro L2, Subred Privada L3 (Host-Only), NAT L3 y Bridge Físico Directo con auto-rellenado inteligente.
+  - Mapa visual interactivo de topología de red y puertos en `Networks.svelte`, mostrando enlaces físicos del host, estructura de bridges y máquinas virtuales / contenedores conectados.
+  - Búsqueda y filtrado rápido en la tabla de redes por nombre, CIDR, modo e interfaz.
+- **Vigilante Periódico de Salud SMART en Segundo Plano**:
+  - Demonio `smart.Watcher` integrado que realiza barridos periódicos (cada 24 horas) y notifica automáticamente ante fallos inminentes, temperatura crítica (≥60°C) o sectores reasignados (>50) vía el subsistema `notify`.
+- **Descarga de Sesión de Terminal**:
+  - Exportación directa en 1-clic a archivo `.log` desde la barra de herramientas de `TerminalPanel` tanto en terminales serie de VMs como en consolas del host.
+
+### Corregido y Blindado
+- **Aprovisionamiento Fino en Almacenamiento (Sparse)**: Sustitución de `STORAGE_VOL_CREATE_PREALLOC_METADATA` por asignación dispersa estándar (`0`), evitando que `qemu-img` fuerce `preallocation=falloc` y falle con `No space left on device` (ENOSPC).
+- **Corrección en Botón de Modo Selección**: Corregido un fallo por el cual un `$effect` cerraba inmediatamente el modo selección al estar vacía la lista de seleccionados.
+- **Seguridad y Vulnerabilidades**:
+  - Actualización de dependencia Go `golang.org/x/net` a `v0.62.0`, resolviendo GO-2026-6866 y GO-2026-6860.
+  - Sobreescritura de `minimatch` a `^11.0.3` en npm, eliminando 13 vulnerabilidades de severidad moderada en la cadena de compilación frontend.
+
+### Seguridad y Blindaje
+- **Control de Acceso en Clonación en Lote**: Aplicación de `assertPoolAllowed`, `assertNetworkAllowed` y `assertPoolPurpose` en `POST /api/vms/{id}/batch-clone` para evitar que operadores con acceso restringido clonen máquinas en pools de almacenamiento o bridges de red no autorizados.
+- **Protección de Subida de Discos OVA**: Eliminación garantizada de archivos temporales y aborto inmediato con HTTP 400 ante fallos de extracción en `UploadDisk`, impidiendo que discos QCOW2 fraudulentos eludan las inspecciones de seguridad de imágenes.
+- **Protección ante Sobrescritura de 2FA**: Verificación obligatoria de la contraseña actual del usuario al reconfigurar o habilitar 2FA si el segundo factor ya se encuentra activo.
+- **Mitigación de Tar-Slip en Vzdump de Proxmox**: Sanitización con `filepath.Clean` y bloqueo de tokens `..` en `ImportFromProxmox`, protegiendo la metadata del contenedor de sobrescrituras maliciosas.
+- **Protección Recursiva de Discos del Sistema**: Inspección en árbol recursiva (`checkTree`) en `assertNotSystemDisk` para blindar configuraciones complejas de particionado LVM y LUKS frente a borrados accidentales de disco.
+- **Protección de Cuentas Privilegiadas en Metadatos**: Bloqueo a operadores no administradores para asignar cuentas privilegiadas del sistema (`root`, `admin`, `system`) en `ci_user`, previniendo tomas de control de cuentas de invitado.
+
+### Cambiado y Refactorizado
+- **Refactorización Modular de Diálogos de `VmList`**:
+  - Modularización de los diálogos de importación, asignación de grupo e instanciación de plantillas en componentes dedicados bajo `lib/components/vm-list/`.
+
 ## [0.1.9] — 2026-10-25
 
 ### Añadido

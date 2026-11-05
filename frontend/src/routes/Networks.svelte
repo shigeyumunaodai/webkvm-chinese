@@ -14,9 +14,11 @@
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import Icon from '$lib/components/Icon.svelte';
   import StatCard from '$lib/components/StatCard.svelte';
+  import SearchInput from '$lib/components/SearchInput.svelte';
   import { t } from '../lib/i18n.svelte.js';
 
   let networks = $state([]);
+  let searchQuery = $state('');
   let hostInterfaces = $state([]);
   // Tracks whether the host-interface fetch has been attempted at least
   // once. The effect below keys off this flag, not off the array being
@@ -29,8 +31,9 @@
   let showCreate = $state(false);
   let editingNet = $state(null);
   let name = $state('');
-  let cidr = $state('192.168.100.0/24');
-  // Exactly 3 kinds: isolated (no internet) is the safest default.
+  let cidr = $state('');
+  // mode: 'l2' (Layer 2 Pure Switch), 'isolated' (L3 Host-Only), 'nat' (L3 NAT), 'direct' (Physical bridge)
+  let mode = $state('l2');
   let kind = $state('isolated');
   let directInterface = $state('');
   let vlanAware = $state(false);
@@ -176,11 +179,12 @@
 
   function resetForm() {
     name = '';
-    cidr = '192.168.100.0/24';
+    mode = 'l2';
     kind = 'isolated';
+    cidr = '';
     directInterface = '';
     vlanAware = vlanAwareDefault;
-    dhcp = true;
+    dhcp = false;
     dhcpStart = '';
     dhcpEnd = '';
     dnsText = '';
@@ -194,10 +198,39 @@
     showCreate = false;
   }
 
+  function onModeChange(newMode) {
+    mode = newMode;
+    if (mode === 'l2') {
+      kind = 'isolated';
+      cidr = '';
+      dhcp = false;
+    } else if (mode === 'isolated') {
+      kind = 'isolated';
+      if (!cidr) cidr = '192.168.100.0/24';
+      dhcp = true;
+    } else if (mode === 'nat') {
+      kind = 'nat';
+      if (!cidr) cidr = '10.20.0.0/24';
+      dhcp = true;
+    } else if (mode === 'direct') {
+      kind = 'direct';
+      dhcp = false;
+    }
+  }
+
   function startEdit(net) {
     editingNet = net.name;
     kind = net.kind || 'isolated';
     cidr = net.cidr || '';
+    if (kind === 'direct') {
+      mode = 'direct';
+    } else if (kind === 'nat') {
+      mode = 'nat';
+    } else if (!net.cidr) {
+      mode = 'l2';
+    } else {
+      mode = 'isolated';
+    }
     directInterface = net.interface || '';
     vlanAware = !!net.vlan_aware;
     dhcp = !!net.dhcp;
@@ -464,7 +497,19 @@
       toast.error(msg, { duration: 0 });
       return;
     }
-    if (kind !== 'direct' && cidr && !cidr.includes('/')) {
+    if (mode === 'isolated' && (!cidr || !cidr.trim())) {
+      const msg = t('networks.cidrPrefixError');
+      error = msg;
+      toast.error(msg, { duration: 0 });
+      return;
+    }
+    if (kind === 'nat' && (!cidr || !cidr.trim())) {
+      const msg = t('networks.cidrPrefixError');
+      error = msg;
+      toast.error(msg, { duration: 0 });
+      return;
+    }
+    if (kind !== 'direct' && cidr && cidr.trim() && !cidr.includes('/')) {
       const msg = t('networks.cidrPrefixError');
       error = msg;
       toast.error(msg, { duration: 0 });
@@ -487,22 +532,35 @@
         autostart,
         interface: directInterface,
         vlan_aware: vlanAware,
+        dhcp: !!(dhcp && cidr && cidr.trim()),
       };
       if (cidr && cidr.trim()) payload.cidr = cidr.trim();
       if (gateway && gateway.trim()) payload.gateway = gateway.trim();
+      if (payload.dhcp) {
+        payload.dhcp_start = dhcpStart || preview?.dhcpStart || '';
+        payload.dhcp_end = dhcpEnd || preview?.dhcpEnd || '';
+        payload.reservations = cleanReservations();
+      }
       if (dnsList.length > 0) payload.dns = dnsList;
       if (Number(mtu)) payload.mtu = Number(mtu);
     } else {
       const dnsList = dnsText ? parseDNSList(dnsText) : [dns1.trim(), dns2.trim()].filter(Boolean);
-      payload = { name: name.trim(), kind, autostart, cidr: cidr || '', dhcp };
+      payload = {
+        name: name.trim(),
+        kind,
+        autostart,
+        cidr: cidr ? cidr.trim() : '',
+        dhcp: !!(dhcp && cidr && cidr.trim()),
+        vlan_aware: vlanAware,
+      };
       if (gateway && gateway.trim()) payload.gateway = gateway.trim();
-      if (dhcp) {
+      if (payload.dhcp) {
         payload.dhcp_start = dhcpStart || preview?.dhcpStart || '';
         payload.dhcp_end = dhcpEnd || preview?.dhcpEnd || '';
       }
       if (dnsList.length > 0) payload.dns = dnsList;
       if (Number(mtu)) payload.mtu = Number(mtu);
-      if (dhcp) payload.reservations = cleanReservations();
+      if (payload.dhcp) payload.reservations = cleanReservations();
     }
     const taskId = 'net-create:' + name.trim();
     upsertTask({
@@ -691,18 +749,24 @@
             <Input id="net-name" bind:value={name} placeholder="my-network" />
           </div>
           <div>
-            <label for="net-kind" class="block text-sm font-medium mb-1.5"
+            <label for="net-mode" class="block text-sm font-medium mb-1.5"
               >{t('networks.forwardMode')}</label
             >
-            <select id="net-kind" bind:value={kind} class="input">
-              <option value="isolated">{t('networks.isolated')}</option>
-              <option value="nat">{t('networks.nat')}</option>
-              <option value="direct">{t('networks.direct')}</option>
+            <select
+              id="net-mode"
+              value={mode}
+              onchange={(e) => onModeChange(e.currentTarget.value)}
+              class="input"
+            >
+              <option value="l2">{t('networks.modeL2')}</option>
+              <option value="isolated">{t('networks.modeL3Isolated')}</option>
+              <option value="nat">{t('networks.modeL3Nat')}</option>
+              <option value="direct">{t('networks.modeDirect')}</option>
             </select>
           </div>
         </div>
 
-        {#if kind === 'direct'}
+        {#if mode === 'direct'}
           <div>
             <label for="net-direct-iface" class="block text-sm font-medium mb-1.5"
               >{t('networks.directInterfaceLabel')}</label
@@ -712,7 +776,8 @@
               {#each hostInterfaces as iface (iface.name || iface)}
                 <option value={iface.name}
                   >{iface.name}
-                  {iface.type !== 'other' ? `(${iface.type})` : ''} — {iface.state}</option
+                  {iface.type !== 'other' ? `(${iface.type})` : ''}
+                  {iface.master ? `[en ${iface.master}]` : ''} — {iface.state}</option
                 >
               {/each}
             </select>
@@ -773,16 +838,130 @@
               </div>
             </div>
           </div>
-        {:else}
-          <div>
-            <label for="net-cidr" class="block text-sm font-medium mb-1.5">CIDR</label>
-            <Input id="net-cidr" bind:value={cidr} placeholder="192.168.100.0/24" />
-            <p class="text-xs text-muted-foreground mt-1">
-              {kind === 'nat' ? t('networks.natHelp') : t('networks.isolatedHelp')}
+        {:else if mode === 'l2'}
+          <div class="space-y-3">
+            <p
+              class="text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border"
+            >
+              {t('networks.modeL2Help')}
             </p>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                bind:checked={vlanAware}
+                class="w-4 h-4 rounded border-border bg-background text-accent focus:ring-accent"
+              />
+              {t('networks.vlanAwareLabel')}
+            </label>
+          </div>
+        {:else}
+          <div class="space-y-3">
+            <div>
+              <label for="net-cidr" class="block text-sm font-medium mb-1.5">CIDR</label>
+              <Input
+                id="net-cidr"
+                bind:value={cidr}
+                placeholder={mode === 'nat' ? '10.20.0.0/24' : '192.168.100.0/24'}
+              />
+              <p class="text-xs text-muted-foreground mt-1">
+                {mode === 'nat' ? t('networks.modeL3NatHelp') : t('networks.modeL3IsolatedHelp')}
+              </p>
+            </div>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                bind:checked={vlanAware}
+                class="w-4 h-4 rounded border-border bg-background text-accent focus:ring-accent"
+              />
+              {t('networks.vlanAwareLabel')}
+            </label>
           </div>
         {/if}
       {:else}
+        {@const curNet = networks.find((n) => n.name === editingNet)}
+        {@const curSlaves = curNet?.slaves || []}
+        {@const curLeases = (editingNet && leasesByNetwork[editingNet]) || []}
+
+        <!-- Operational Status & Real Hardware Card -->
+        <div class="p-3.5 rounded-xl border border-border/80 bg-background/60 space-y-3">
+          <div class="flex items-center justify-between border-b border-border/50 pb-2">
+            <span
+              class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
+            >
+              <Icon name="network" size={14} class="text-accent" />
+              {t('networks.operationalStatusTitle')}
+            </span>
+            <div class="flex items-center gap-1.5">
+              <span
+                class="w-2 h-2 rounded-full {curNet?.active ? 'bg-success' : 'bg-muted-foreground'}"
+              ></span>
+              <span
+                class="text-xs font-medium {curNet?.active
+                  ? 'text-success'
+                  : 'text-muted-foreground'}"
+              >
+                {curNet?.active ? t('networks.activeBadge') : t('networks.inactiveBadge')}
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div class="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+              <span class="text-muted-foreground block mb-0.5"
+                >{t('networks.vlanFilteringStatus')}</span
+              >
+              <span class="font-semibold {vlanAware ? 'text-accent' : 'text-foreground'}">
+                {vlanAware
+                  ? t('networks.vlanFilteringEnabled')
+                  : t('networks.vlanFilteringDisabled')}
+              </span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+              <span class="text-muted-foreground block mb-0.5"
+                >{t('networks.activeDhcpClientsCount')}</span
+              >
+              <span class="font-mono font-bold text-foreground tnum">{curLeases.length}</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+              <span class="text-muted-foreground block mb-0.5">MTU</span>
+              <span class="font-mono font-semibold text-foreground tnum">{curNet?.mtu || 1500}</span
+              >
+            </div>
+          </div>
+
+          <div>
+            <span class="text-[11px] text-muted-foreground font-medium block mb-1">
+              {t('networks.slavesAttachedLabel')}:
+            </span>
+            {#if curSlaves.length > 0 || (kind === 'direct' && directInterface)}
+              <div class="flex flex-wrap gap-1.5">
+                {#if kind === 'direct' && directInterface}
+                  <span
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono text-[11px] bg-accent/10 text-accent border border-accent/20"
+                  >
+                    <Icon name="link" size={11} />
+                    {directInterface} (primary)
+                  </span>
+                {/if}
+                {#each curSlaves as sl (sl)}
+                  {#if sl !== directInterface}
+                    <span
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono text-[11px] bg-muted text-foreground border border-border"
+                    >
+                      <Icon name="link" size={11} class="text-muted-foreground" />
+                      {sl}
+                    </span>
+                  {/if}
+                {/each}
+              </div>
+            {:else}
+              <span class="text-[11px] text-muted-foreground/80 italic"
+                >{t('networks.noSlavesAttached')}</span
+              >
+            {/if}
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label for="net-edit-kind" class="block text-sm font-medium mb-1.5"
@@ -814,20 +993,24 @@
           {:else}
             <div>
               <label for="net-edit-cidr" class="block text-sm font-medium mb-1.5">CIDR</label>
-              <Input id="net-edit-cidr" value={cidr} readonly class="opacity-50" />
+              <Input
+                id="net-edit-cidr"
+                value={cidr || '— (L2 Switch)'}
+                readonly
+                class="opacity-50"
+              />
             </div>
           {/if}
         </div>
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            bind:checked={vlanAware}
+            class="w-4 h-4 rounded border-border bg-background text-accent focus:ring-accent"
+          />
+          {t('networks.vlanAwareLabel')}
+        </label>
         {#if kind === 'direct'}
-          <label class="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              bind:checked={vlanAware}
-              class="w-4 h-4 rounded border-border bg-background text-accent focus:ring-accent"
-            />
-            {t('networks.vlanAwareLabel')}
-          </label>
-
           <div class="pt-3 border-t border-border space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -881,7 +1064,7 @@
         {/if}
       {/if}
 
-      {#if kind !== 'direct'}
+      {#if mode !== 'l2' && (kind !== 'direct' || (cidr && cidr.trim()))}
         <div class="flex items-center gap-2 pt-2 border-t border-border">
           <input
             id="net-dhcp"
@@ -1067,7 +1250,11 @@
       {/snippet}
     </EmptyState>
   {:else}
-    <div id="networks-table-anchor"></div>
+    <div id="networks-table-anchor" class="flex items-center justify-between gap-3 mb-3">
+      <div class="w-full sm:w-72">
+        <SearchInput bind:value={searchQuery} placeholder={t('common.search')} />
+      </div>
+    </div>
     <DataTable
       columns={[
         { key: 'name', label: t('networks.name'), width: 'minmax(180px, 1fr)', render: nameCell },
@@ -1077,11 +1264,117 @@
         { key: 'dhcp', label: 'DHCP', width: '130px', render: dhcpCell },
         { key: 'actions', label: '', align: 'right', width: '160px', render: actionsCell },
       ]}
-      rows={networks}
+      rows={searchQuery.trim()
+        ? networks.filter(
+            (n) =>
+              n.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+              (n.cidr && n.cidr.toLowerCase().includes(searchQuery.trim().toLowerCase())) ||
+              (n.kind && n.kind.toLowerCase().includes(searchQuery.trim().toLowerCase())) ||
+              (n.interface && n.interface.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+          )
+        : networks}
       rowKey="name"
       emptyMessage={t('networks.noNetworks')}
       emptyIcon="network"
     />
+  {/if}
+
+  <!-- Topology Mapping Card -->
+  {#if networks.length > 0}
+    <Card class="p-5 mt-6 space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-accent/10 text-accent">
+            <Icon name="network" size={20} />
+          </div>
+          <div>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-foreground">
+              {t('networks.topologyMapTitle')}
+            </h2>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              {t('networks.topologyMapDesc')}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3 pt-1">
+        {#each networks as net (net.name)}
+          {@const boundPhysical = hostInterfaces.filter(
+            (i) => i.master === net.name || (net.interface && i.name === net.interface)
+          )}
+          <div class="p-3.5 rounded-xl border border-border/80 bg-background/50 space-y-2">
+            <div
+              class="flex items-center justify-between flex-wrap gap-2 border-b border-border/50 pb-2"
+            >
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-success"></span>
+                <span class="font-mono font-bold text-sm text-foreground">{net.name}</span>
+                <span
+                  class="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded border border-border bg-muted text-muted-foreground"
+                >
+                  {net.kind || 'bridge'}
+                </span>
+                {#if net.cidr}
+                  <span class="text-xs font-mono text-muted-foreground">{net.cidr}</span>
+                {/if}
+              </div>
+              {#if net.vlan_aware}
+                <span
+                  class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-accent/15 text-accent border border-accent/30"
+                >
+                  VLAN AWARE
+                </span>
+              {/if}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
+              <div>
+                <span class="text-muted-foreground font-medium block mb-1"
+                  >Interfaces Físicas / Enlaces:</span
+                >
+                {#if boundPhysical.length > 0}
+                  <div class="space-y-1">
+                    {#each boundPhysical as ph (ph.name)}
+                      <div
+                        class="flex items-center gap-2 font-mono text-[11px] bg-muted/30 px-2 py-1 rounded border border-border/60"
+                      >
+                        <Icon name="link" size={12} class="text-accent" />
+                        <span class="font-semibold text-foreground">{ph.name}</span>
+                        <span class="text-muted-foreground"
+                          >({ph.type || 'eth'} · {ph.speed ? `${ph.speed}M` : ph.state})</span
+                        >
+                      </div>
+                    {/each}
+                  </div>
+                {:else}
+                  <span class="text-muted-foreground/70 italic text-[11px]"
+                    >Puente virtual interno (sin tarjeta física asignada)</span
+                  >
+                {/if}
+              </div>
+
+              <div>
+                <span class="text-muted-foreground font-medium block mb-1">Propiedades de Red:</span
+                >
+                <div class="space-y-1 font-mono text-[11px] text-muted-foreground">
+                  {#if net.gateway}
+                    <div>Gateway: <span class="text-foreground">{net.gateway}</span></div>
+                  {/if}
+                  <div>
+                    DHCP: <span class="text-foreground"
+                      >{net.dhcp
+                        ? `${net.dhcp_start || ''} — ${net.dhcp_end || ''}`
+                        : 'Desactivado'}</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </Card>
   {/if}
 
   <!-- Physical Host Interfaces Card -->
@@ -1662,6 +1955,13 @@
             {t('networks.autostartBadge')}
           </span>
         {/if}
+        {#if row.vlan_aware}
+          <span
+            class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-semibold whitespace-nowrap"
+          >
+            VLAN TRUNK
+          </span>
+        {/if}
       </div>
     </div>
   </div>
@@ -1688,6 +1988,8 @@
   </span>
   {#if row.kind === 'direct' && row.interface}
     <div class="text-[11px] text-muted-foreground font-mono tnum mt-0.5">{row.interface}</div>
+  {:else if !row.cidr && row.kind !== 'direct'}
+    <div class="text-[11px] text-muted-foreground font-mono uppercase mt-0.5">L2 Only</div>
   {/if}
 {/snippet}
 
